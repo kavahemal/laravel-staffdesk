@@ -16,6 +16,11 @@ return [
     'employee_code_digits' => 4,
 
     /*
+    | Roles that can be given to an employee. Admin is the system account and has no employee profile.
+    */
+    'employee_roles' => ['HR', 'Manager', 'Employee'],
+
+    /*
     | Display format for dates in views and exports (PHP date format).
     */
     'date_format' => 'd M Y',

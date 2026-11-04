@@ -1,17 +1,32 @@
 # Third-party code
 
-This project includes code from the following open-source project. Everything else in the repository is covered by the project's own [LICENSE](LICENSE).
+This project includes code from the following open-source projects. Everything else in the repository is covered by the project's own [LICENSE](LICENSE).
+
+## SweetAlert2
+
+- Source: https://sweetalert2.github.io – MIT, © Tristan Edwards & Limon Monte
+- Installed through npm (not copied into this repository); used for confirm dialogs and toasts in `resources/js/app.js`.
+
+## flatpickr
+
+- Source: https://flatpickr.js.org – MIT, © Gregory Petrosyan
+- Installed through npm (not copied into this repository); date picker set up in `resources/js/app.js`, used via `<x-date-input>`.
+
+## Heroicons
+
+- Icons: https://heroicons.com – MIT, © Tailwind Labs
+- Blade components: [blade-ui-kit/blade-heroicons](https://github.com/blade-ui-kit/blade-heroicons) – MIT, © Dries Vints
+- Installed through Composer (not copied into this repository); used as `<x-heroicon-o-… />`.
 
 ## TailAdmin – Free Tailwind CSS Admin Dashboard (Laravel version)
 
 - Source: https://github.com/TailAdmin/tailadmin-laravel
 - Licence: MIT
 - Used in this project (adapted, light mode only):
-  - Theme tokens – colours, font sizes, shadows and sidebar menu utilities in `resources/css/app.css`
+  - Theme tokens – colours, font sizes, shadows, sidebar menu utilities and date-picker styles in `resources/css/app.css`
   - Layout, sidebar and header markup in `resources/views/layouts/`
   - Sidebar state store in `resources/js/app.js`
   - Sign-in page design in `resources/views/layouts/guest.blade.php` and `resources/views/auth/`
-  - SVG icons in `resources/views/components/icon.blade.php`
   - `public/images/grid-01.svg`
 
 ```

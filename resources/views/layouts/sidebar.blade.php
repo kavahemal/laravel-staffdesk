@@ -18,10 +18,10 @@
     </div>
 
     <div class="no-scrollbar flex flex-col overflow-y-auto">
-        <nav class="mb-6" aria-label="{{ __('Main menu') }}">
+        <nav class="mb-6" aria-label="Main menu">
             <h2 class="mb-4 flex text-xs leading-5 text-gray-400 uppercase xl:justify-center xl:[.sidebar-expanded_&]:justify-start">
-                <span class="xl:hidden xl:[.sidebar-expanded_&]:inline">{{ __('Menu') }}</span>
-                <x-icon name="dots" class="hidden xl:block xl:[.sidebar-expanded_&]:hidden" />
+                <span class="xl:hidden xl:[.sidebar-expanded_&]:inline">Menu</span>
+                <x-heroicon-o-ellipsis-horizontal class="hidden size-6 xl:block xl:[.sidebar-expanded_&]:hidden" />
             </h2>
 
             <ul class="flex flex-col gap-1">
@@ -37,9 +37,9 @@
                                'menu-item-inactive' => ! $active,
                            ])
                            @if ($active) aria-current="page" @endif
-                           title="{{ __($item['title']) }}">
-                            <x-icon :name="$item['icon']" :class="$active ? 'menu-item-icon-active' : 'menu-item-icon-inactive'" />
-                            <span class="xl:hidden xl:[.sidebar-expanded_&]:inline">{{ __($item['title']) }}</span>
+                           title="{{ $item['title'] }}">
+                            <x-dynamic-component :component="'heroicon-o-'.$item['icon']" @class(['size-6 shrink-0', 'menu-item-icon-active' => $active, 'menu-item-icon-inactive' => ! $active]) />
+                            <span class="xl:hidden xl:[.sidebar-expanded_&]:inline">{{ $item['title'] }}</span>
                         </a>
                     </li>
                 @endforeach

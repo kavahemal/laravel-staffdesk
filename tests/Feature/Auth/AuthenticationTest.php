@@ -8,7 +8,8 @@ use function Pest\Laravel\assertGuest;
 use function Pest\Laravel\get;
 use function Pest\Laravel\post;
 
-test('login screen can be rendered', function () {
+test('the home page redirects to login, which can be rendered', function () {
+    get('/')->assertRedirect('/login');
     get('/login')->assertOk();
 });
 

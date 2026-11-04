@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">{{ __('Profile') }}</x-slot>
+    <x-slot name="header">Profile</x-slot>
 
     <div class="grid grid-cols-1 gap-6 xl:grid-cols-2">
         <div class="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">

@@ -27,6 +27,6 @@ class ProfileController extends Controller
     {
         $request->user()->update($request->validated());
 
-        return Redirect::route('profile.edit')->with('status', 'profile-updated');
+        return Redirect::route('profile.edit')->with('success', 'Profile updated.');
     }
 }

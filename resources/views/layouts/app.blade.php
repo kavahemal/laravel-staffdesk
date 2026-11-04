@@ -6,13 +6,16 @@
         <meta name="csrf-token" content="{{ csrf_token() }}">
 
         <title>{{ isset($header) ? strip_tags($header).' | ' : '' }}{{ config('app.name') }}</title>
+        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
         <link rel="preconnect" href="https://fonts.bunny.net">
         <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700&display=swap" rel="stylesheet" />
 
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body>
+    {{-- Flash messages are shown as toasts by resources/js/app.js --}}
+    <body @if (session('success')) data-flash-success="{{ session('success') }}" @endif
+          @if (session('error')) data-flash-error="{{ session('error') }}" @endif>
         {{-- Layout from TailAdmin: fixed sidebar (90px collapsed / 290px expanded on xl+, slide-in below xl) --}}
         <div class="sidebar-expanded min-h-screen xl:flex" x-data
              :class="{ 'sidebar-expanded': $store.sidebar.isExpanded || $store.sidebar.isHovered || $store.sidebar.isMobileOpen }">
@@ -29,7 +32,10 @@
 
                 <main class="mx-auto max-w-(--breakpoint-2xl) p-4 md:p-6">
                     @isset($header)
-                        <h1 class="mb-6 text-xl font-semibold text-gray-800">{{ $header }}</h1>
+                        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                            <h1 class="text-xl font-semibold text-gray-800">{{ $header }}</h1>
+                            {{ $actions ?? '' }}
+                        </div>
                     @endisset
 
                     {{ $slot }}
