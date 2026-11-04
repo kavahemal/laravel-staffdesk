@@ -1,47 +1,41 @@
 <x-guest-layout>
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @php
+        $devLogin = app()->isLocal() ? config('hrms.dev_login') : [];
+    @endphp
 
-    <form method="POST" action="{{ route('login') }}">
+    <div class="mb-5 sm:mb-8">
+        <h1 class="mb-2 text-title-sm font-semibold text-gray-800 sm:text-title-md">{{ __('Sign In') }}</h1>
+        <p class="text-sm text-gray-500">{{ __('Enter your email and password to sign in.') }}</p>
+    </div>
+
+    <x-auth-session-status class="mb-5" :status="session('status')" />
+
+    <form method="POST" action="{{ route('login') }}" class="space-y-5">
         @csrf
 
-        <!-- Email Address -->
         <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
+            <x-input-label for="email">{{ __('Email') }}<span class="text-error-500">*</span></x-input-label>
+            <x-text-input id="email" type="email" name="email" :value="old('email', $devLogin['email'] ?? null)" required autofocus autocomplete="username" placeholder="name@example.com" />
+            <x-input-error :messages="$errors->get('email')" />
         </div>
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
-
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="current-password" />
-
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
+        <div>
+            <x-input-label for="password">{{ __('Password') }}<span class="text-error-500">*</span></x-input-label>
+            <x-password-input id="password" name="password" :value="$devLogin['password'] ?? null" required autocomplete="current-password" placeholder="{{ __('Enter your password') }}" />
+            <x-input-error :messages="$errors->get('password')" />
         </div>
 
-        <!-- Remember Me -->
-        <div class="block mt-4">
-            <label for="remember_me" class="inline-flex items-center">
-                <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                <span class="ms-2 text-sm text-gray-600">{{ __('Remember me') }}</span>
+        <div class="flex items-center justify-between">
+            <label for="remember_me" class="flex cursor-pointer items-center gap-3 text-sm text-gray-700 select-none">
+                <input id="remember_me" type="checkbox" name="remember" class="size-4 rounded border-gray-300 accent-brand-500">
+                {{ __('Keep me logged in') }}
             </label>
-        </div>
 
-        <div class="flex items-center justify-end mt-4">
             @if (Route::has('password.request'))
-                <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Forgot your password?') }}
-                </a>
+                <a href="{{ route('password.request') }}" class="text-sm text-brand-500 hover:text-brand-600">{{ __('Forgot password?') }}</a>
             @endif
-
-            <x-primary-button class="ms-3">
-                {{ __('Log in') }}
-            </x-primary-button>
         </div>
+
+        <x-primary-button class="w-full">{{ __('Sign In') }}</x-primary-button>
     </form>
 </x-guest-layout>

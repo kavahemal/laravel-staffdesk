@@ -2,40 +2,82 @@
 
 use App\Models\User;
 
-test('login screen can be rendered', function () {
-    $response = $this->get('/login');
+use function Pest\Laravel\actingAs;
+use function Pest\Laravel\assertAuthenticated;
+use function Pest\Laravel\assertGuest;
+use function Pest\Laravel\get;
+use function Pest\Laravel\post;
 
-    $response->assertStatus(200);
+test('login screen can be rendered', function () {
+    get('/login')->assertOk();
+});
+
+test('login form is prefilled from env only in the local environment', function () {
+    config(['hrms.dev_login' => ['email' => 'dev@example.com', 'password' => 'dev-secret']]);
+
+    get('/login')->assertDontSee('dev@example.com')->assertDontSee('dev-secret');
+
+    app()->detectEnvironment(fn () => 'local');
+
+    get('/login')->assertSee('value="dev@example.com"', false)->assertSee('value="dev-secret"', false);
 });
 
 test('users can authenticate using the login screen', function () {
     $user = User::factory()->create();
 
-    $response = $this->post('/login', [
+    $response = post('/login', [
         'email' => $user->email,
         'password' => 'password',
     ]);
 
-    $this->assertAuthenticated();
+    assertAuthenticated();
     $response->assertRedirect(route('dashboard', absolute: false));
 });
 
 test('users can not authenticate with invalid password', function () {
     $user = User::factory()->create();
 
-    $this->post('/login', [
+    post('/login', [
         'email' => $user->email,
         'password' => 'wrong-password',
     ]);
 
-    $this->assertGuest();
+    assertGuest();
+});
+
+test('inactive users can not authenticate', function () {
+    $user = User::factory()->inactive()->create();
+
+    post('/login', [
+        'email' => $user->email,
+        'password' => 'password',
+    ])->assertSessionHasErrors('email');
+
+    assertGuest();
+});
+
+test('a user deactivated while signed in is logged out', function () {
+    $user = User::factory()->create();
+    actingAs($user)->get('/dashboard')->assertOk();
+
+    $user->forceFill(['is_active' => false])->save();
+
+    get('/dashboard')
+        ->assertRedirect(route('login', absolute: false))
+        ->assertSessionHasErrors('email');
+    assertGuest();
+});
+
+test('registration is not available', function () {
+    get('/register')->assertNotFound();
+    post('/register')->assertNotFound();
 });
 
 test('users can logout', function () {
     $user = User::factory()->create();
 
-    $response = $this->actingAs($user)->post('/logout');
+    $response = actingAs($user)->post('/logout');
 
-    $this->assertGuest();
+    assertGuest();
     $response->assertRedirect('/');
 });
