@@ -23,7 +23,7 @@ class EmployeeFactory extends Factory
                 .str_pad((string) $number, config('hrms.employee_code_digits'), '0', STR_PAD_LEFT),
             'designation' => fake()->jobTitle(),
             'joining_date' => fake()->dateTimeBetween('-5 years', '-1 month'),
-            'phone' => fake()->numerify('+1 555 ### ####'),
+            'phone' => fake()->numerify('+91 99999 #####'), // obviously fake, never a real person's number
         ];
     }
 }

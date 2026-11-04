@@ -13,10 +13,10 @@ test('each role sees exactly its menu items', function (string $role, array $vis
             : $response->assertDontSee(route($item['route']));
     }
 })->with([
-    'Admin' => ['Admin', ['Dashboard', 'Departments', 'Employees']],
-    'HR' => ['HR', ['Dashboard', 'Employees']],
-    'Manager' => ['Manager', ['Dashboard']],
-    'Employee' => ['Employee', ['Dashboard']],
+    'Admin' => ['Admin', ['Dashboard', 'Leave requests', 'Departments', 'Employees', 'Leave types', 'Settings']],
+    'HR' => ['HR', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests', 'Employees']],
+    'Manager' => ['Manager', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests']],
+    'Employee' => ['Employee', ['Dashboard', 'My leaves', 'Leave balance']],
 ]);
 
 test('the current page is highlighted in the menu', function () {
@@ -25,6 +25,12 @@ test('the current page is highlighted in the menu', function () {
         ->assertSee('aria-current="page"', false)
         ->assertSee('menu-item-active', false);
 });
+
+test('only one menu item is highlighted on pages with a shared route prefix', function (string $route) {
+    $html = actingAs(userWithRole('Employee'))->get(route($route))->getContent();
+
+    expect(substr_count($html, 'aria-current="page"'))->toBe(1);
+})->with(['leaves.index', 'leaves.create', 'leaves.balance']);
 
 test('every configured menu route and icon exists', function () {
     foreach (config('menu') as $item) {

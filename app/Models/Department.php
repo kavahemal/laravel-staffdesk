@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Database\Factories\DepartmentFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -28,5 +29,11 @@ class Department extends Model
     public function employees(): HasMany
     {
         return $this->hasMany(Employee::class);
+    }
+
+    /** Matches the name; `%` and `_` are taken literally. */
+    public function scopeSearch(Builder $query, string $term): void
+    {
+        $query->where('name', 'like', like_pattern($term));
     }
 }

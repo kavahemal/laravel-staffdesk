@@ -23,7 +23,7 @@ function employeeData(array $overrides = []): array
         'department_id' => Department::factory()->create()->id,
         'designation' => 'Accountant',
         'joining_date' => '2025-01-15',
-        'phone' => '+1 555 123 4567',
+        'phone' => '+91 99999 12345',
         'password' => 'secret-password',
         'password_confirmation' => 'secret-password',
         ...$overrides,

@@ -62,6 +62,11 @@ class User extends Authenticatable
         return $this->hasMany(Department::class, 'manager_id');
     }
 
+    public function leaveRequests(): HasMany
+    {
+        return $this->hasMany(LeaveRequest::class);
+    }
+
     /** Active users who can approve leave for their own department, i.e. can be set as a department manager. */
     public function scopeTeamManagers(Builder $query): void
     {

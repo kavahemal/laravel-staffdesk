@@ -17,14 +17,17 @@ class RolesSeeder extends Seeder
         'Admin' => [
             'departments.manage',
             'leave-types.manage',
+            'settings.manage',
             'users.activate',
             'employees.manage',
             'leaves.approve-any',
+            'leaves.record',
             'reports.view',
         ],
         'HR' => [
             'employees.manage',
             'leaves.approve-any',
+            'leaves.record',
             'reports.view',
             'leaves.apply',
         ],

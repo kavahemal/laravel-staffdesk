@@ -13,15 +13,8 @@
     @endphp
 
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
-        <form method="GET" action="{{ route('employees.index') }}" class="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:px-6">
-            <div class="relative sm:w-80">
-                <x-heroicon-o-magnifying-glass class="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-gray-400" />
-                <x-text-input name="filter[search]" type="search" :value="$filters['search']" placeholder="Search name, email, code…" class="pl-11" />
-            </div>
-
-            @if (request()->filled('sort'))
-                <input type="hidden" name="sort" value="{{ request('sort') }}">
-            @endif
+        <x-filter-bar :action="route('employees.index')" :filtered="$filtered" button="Search">
+            <x-search-input :value="$filters['search']" placeholder="Search name, email, code…" />
 
             <div class="sm:w-56">
                 <x-select-input name="filter[department]" x-data @change="$el.form.submit()">
@@ -31,14 +24,7 @@
                     @endforeach
                 </x-select-input>
             </div>
-
-            <div class="flex items-center gap-3">
-                <x-secondary-button type="submit" class="py-2.5">Search</x-secondary-button>
-                @if ($filtered)
-                    <a href="{{ route('employees.index') }}" class="text-sm text-gray-500 hover:text-brand-500">Reset</a>
-                @endif
-            </div>
-        </form>
+        </x-filter-bar>
 
         <div class="max-w-full overflow-x-auto">
             <table class="min-w-full">

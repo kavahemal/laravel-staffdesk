@@ -11,7 +11,6 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
@@ -29,9 +28,7 @@ class DepartmentController extends Controller
             ->with('manager')
             ->withCount('employees')
             ->allowedFilters([
-                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->where(
-                    'name', 'like', '%'.addcslashes(Str::limit(implode(',', (array) $value), 100, ''), '%_\\').'%'
-                )),
+                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(search_term($value))),
             ])
             ->allowedSorts([
                 $byName,
@@ -40,7 +37,7 @@ class DepartmentController extends Controller
             ])
             ->defaultSort($byName)
             ->orderBy('departments.id')
-            ->paginate(15)
+            ->paginate(config('hrms.per_page'))
             ->withQueryString();
 
         return view('departments.index', [

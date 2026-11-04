@@ -1,6 +1,6 @@
 @php
     $menu = collect(config('menu'))
-        ->filter(fn (array $item) => empty($item['permission']) || auth()->user()->can($item['permission']));
+        ->filter(fn (array $item) => empty($item['permission']) || auth()->user()->canAny((array) $item['permission']));
 @endphp
 
 {{-- Labels show when the sidebar is expanded (xl+) and always below xl, where the sidebar is a full-width overlay. --}}

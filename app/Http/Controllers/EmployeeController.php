@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 use Illuminate\View\View;
 use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
@@ -32,8 +31,7 @@ class EmployeeController extends Controller
         $employees = QueryBuilder::for(Employee::class)
             ->with(['user.roles', 'department'])
             ->allowedFilters([
-                // Query Builder splits values on commas; join them back so "Smith, John" stays one term.
-                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(Str::limit(implode(',', (array) $value), 100, ''))),
+                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(search_term($value))),
                 AllowedFilter::exact('department', 'department_id'),
             ])
             ->allowedSorts([
@@ -45,7 +43,7 @@ class EmployeeController extends Controller
             ])
             ->defaultSort($byCode)
             ->orderBy('employees.id')
-            ->paginate(15)
+            ->paginate(config('hrms.per_page'))
             ->withQueryString();
 
         return view('employees.index', [

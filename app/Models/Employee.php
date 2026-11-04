@@ -33,7 +33,7 @@ class Employee extends Model
     /** Matches employee code, designation, name or email; `%` and `_` are taken literally. */
     public function scopeSearch(Builder $query, string $term): void
     {
-        $like = '%'.addcslashes($term, '%_\\').'%';
+        $like = like_pattern($term);
 
         $query->where(fn (Builder $query) => $query
             ->where('employee_code', 'like', $like)

@@ -2,7 +2,9 @@
 @props(['disabled' => false, 'bag' => 'default'])
 
 @php
-    $invalid = $errors->getBag($bag)->has($attributes->get('name'));
+    // Array names like work_week[1] have their errors under work_week.1.
+    $errorKey = str_replace(['[]', '[', ']'], ['', '.', ''], (string) $attributes->get('name'));
+    $invalid = $errors->getBag($bag)->has($errorKey);
     $state = $invalid
         ? 'border-error-500 focus:border-error-300 focus:ring-error-500/10'
         : 'border-gray-300 focus:border-brand-300 focus:ring-brand-500/10';

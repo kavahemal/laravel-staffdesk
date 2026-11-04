@@ -1,6 +1,6 @@
 {{--
     Date field with the flatpickr picker (set up in resources/js/app.js). Value is Y-m-d; shown as "15 Jan 2025".
-    Extra options as attributes: data-datepicker="range", data-min-date="today", data-max-date="…", data-disable-sundays.
+    Extra options as attributes: data-datepicker="range", data-min-date="today", data-max-date="…", data-disable-weekdays="0,6" (0 = Sunday).
 --}}
 @props(['bag' => 'default'])
 

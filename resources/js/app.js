@@ -36,33 +36,49 @@ window.toast = (icon, title) => toast.fire({ icon, title, timer: icon === 'error
 
 // <form data-confirm="Delete department?"> asks before submitting. Optional:
 // data-confirm-text="…" (message), data-confirm-button="Delete" (button label),
-// data-confirm-style="danger|primary" (red for destructive actions – the default – or blue).
+// data-confirm-style="danger|primary" (red for destructive actions – the default – or blue),
+// data-confirm-comment (adds an optional comment box; its text goes into the form's hidden `comment` input).
 document.addEventListener('submit', async (event) => {
     const form = event.target;
     if (!form.dataset.confirm) return;
 
     event.preventDefault();
-    const { confirm, confirmText, confirmButton, confirmStyle } = form.dataset;
+    const { confirm, confirmText, confirmButton, confirmStyle, confirmComment } = form.dataset;
     const style = confirmStyles[confirmStyle] ?? confirmStyles.danger;
+    const withComment = confirmComment !== undefined;
 
-    const { isConfirmed } = await dialog.fire({
+    const { isConfirmed, value } = await dialog.fire({
         icon: style.icon,
         title: confirm,
         text: confirmText ?? 'This action cannot be undone.',
         confirmButtonText: confirmButton ?? 'Delete',
-        customClass: { ...dialogClasses, confirmButton: style.confirmButton },
+        customClass: {
+            ...dialogClasses,
+            confirmButton: style.confirmButton,
+            input: 'rounded-lg! border! border-gray-300! text-sm! text-gray-800! shadow-theme-xs! focus:border-brand-300! focus:ring-3! focus:ring-brand-500/10!',
+        },
+        ...(withComment && {
+            input: 'textarea',
+            inputPlaceholder: 'Comment (optional)',
+            inputAttributes: { maxlength: 500 },
+        }),
     });
-    if (isConfirmed) form.submit();
+    if (!isConfirmed) return;
+
+    if (withComment && form.elements.comment) form.elements.comment.value = value ?? '';
+    form.submit();
 });
 
 // Date pickers: <input data-datepicker> (use <x-date-input>). The form still sends Y-m-d;
 // the user sees the same format as config('hrms.date_format'). Options via data attributes:
-// data-datepicker="range", data-min-date="today", data-max-date="2026-12-31", data-disable-sundays.
+// data-datepicker="range", data-min-date="today", data-max-date="2026-12-31",
+// data-disable-weekdays="0,6" (getDay() numbers, 0 = Sunday – same as Carbon).
 window.initDatepickers = (root = document) => {
     root.querySelectorAll('input[data-datepicker]').forEach((input) => {
         if (input._flatpickr) return;
 
-        const { datepicker, displayFormat, minDate, maxDate, disableSundays } = input.dataset;
+        const { datepicker, displayFormat, minDate, maxDate, disableWeekdays } = input.dataset;
+        const offDays = (disableWeekdays ?? '').split(',').filter((day) => day !== '').map(Number);
         flatpickr(input, {
             mode: datepicker === 'range' ? 'range' : 'single',
             dateFormat: 'Y-m-d',
@@ -70,7 +86,7 @@ window.initDatepickers = (root = document) => {
             altFormat: displayFormat || 'd M Y',
             minDate: minDate || null,
             maxDate: maxDate || null,
-            disable: disableSundays !== undefined ? [(date) => date.getDay() === 0] : [],
+            disable: offDays.length ? [(date) => offDays.includes(date.getDay())] : [],
             locale: { firstDayOfWeek: 1, rangeSeparator: ' – ' },
         });
     });

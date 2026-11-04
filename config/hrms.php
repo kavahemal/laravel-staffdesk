@@ -5,9 +5,18 @@ use Illuminate\Support\Carbon;
 return [
 
     /*
-    | Days that never count as leave days (Carbon day-of-week constants).
+    | Default work week until Admin saves one on the Settings page.
+    | Keys are Carbon day-of-week constants; values: full (1 leave day), half (0.5), off (0).
     */
-    'week_off' => [Carbon::SUNDAY],
+    'work_week' => [
+        Carbon::MONDAY => 'full',
+        Carbon::TUESDAY => 'full',
+        Carbon::WEDNESDAY => 'full',
+        Carbon::THURSDAY => 'full',
+        Carbon::FRIDAY => 'full',
+        Carbon::SATURDAY => 'full',
+        Carbon::SUNDAY => 'off',
+    ],
 
     /*
     | Employee codes are generated as prefix + zero-padded number, e.g. EMP-0001.
@@ -19,6 +28,21 @@ return [
     | Roles that can be given to an employee. Admin is the system account and has no employee profile.
     */
     'employee_roles' => ['HR', 'Manager', 'Employee'],
+
+    /*
+    | Rows per page in every list.
+    */
+    'per_page' => 15,
+
+    /*
+    | List search boxes: longer input is cut to this many characters.
+    */
+    'search_max_length' => 100,
+
+    /*
+    | How many notifications the header bell lists (newest first).
+    */
+    'header_notifications' => 8,
 
     /*
     | Display format for dates in views and exports (PHP date format).
