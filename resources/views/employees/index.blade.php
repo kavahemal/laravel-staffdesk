@@ -65,14 +65,11 @@
                                     @endcan
 
                                     @can('changeStatus', $employee)
-                                        <form method="POST" action="{{ route('employees.status', $employee) }}"
-                                              @if ($employee->user->is_active)
-                                                  data-confirm="Deactivate employee?" data-confirm-button="Deactivate"
+                                        <form method="POST" action="{{ route('employees.status', $employee) }}" @if ($employee->user->is_active) data-confirm="Deactivate employee?" data-confirm-button="Deactivate"
                                                   data-confirm-text="They will be signed out and can't sign in until activated again."
                                               @else
                                                   data-confirm="Activate employee?" data-confirm-button="Activate" data-confirm-style="primary"
-                                                  data-confirm-text="They will be able to sign in again."
-                                              @endif>
+                                                  data-confirm-text="They will be able to sign in again." @endif>
                                             @csrf
                                             @method('PATCH')
                                             <input type="hidden" name="active" value="{{ $employee->user->is_active ? 0 : 1 }}">

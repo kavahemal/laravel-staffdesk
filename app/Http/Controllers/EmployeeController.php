@@ -6,8 +6,8 @@ use App\Http\Requests\EmployeeRequest;
 use App\Models\Department;
 use App\Models\Employee;
 use App\Services\EmployeeService;
+use App\Support\Filters\MultiColumnSearch;
 use App\Support\Sorts\RelatedColumnSort;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -31,7 +31,7 @@ class EmployeeController extends Controller
         $employees = QueryBuilder::for(Employee::class)
             ->with(['user.roles', 'department'])
             ->allowedFilters([
-                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(search_term($value))),
+                AllowedFilter::custom('search', new MultiColumnSearch(['employee_code', 'designation', 'user.name', 'user.email'])),
                 AllowedFilter::exact('department', 'department_id'),
             ])
             ->allowedSorts([
@@ -48,7 +48,7 @@ class EmployeeController extends Controller
 
         return view('employees.index', [
             'employees' => $employees,
-            'departments' => Department::orderBy('name')->get(['id', 'name']),
+            'departments' => Department::forSelect()->get(),
             'filters' => [
                 'search' => (string) $request->input('filter.search', ''),
                 'department' => (int) $request->input('filter.department') ?: null,
@@ -89,7 +89,7 @@ class EmployeeController extends Controller
     {
         return [
             'employee' => $employee,
-            'departments' => Department::orderBy('name')->get(['id', 'name']),
+            'departments' => Department::forSelect()->get(),
             'roles' => config('hrms.employee_roles'),
         ];
     }

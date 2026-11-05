@@ -1,6 +1,7 @@
 <?php
 
 use App\Models\User;
+use App\Services\SettingService;
 use Illuminate\Auth\Notifications\ResetPassword;
 use Illuminate\Support\Facades\Notification;
 
@@ -19,6 +20,16 @@ test('reset password link can be requested', function () {
     post('/forgot-password', ['email' => $user->email]);
 
     Notification::assertSentTo($user, ResetPassword::class);
+});
+
+test('a mail server that is down gives a friendly error, not a 500', function () {
+    $user = User::factory()->create();
+    app(SettingService::class)->saveMail(['mailer' => 'smtp', 'host' => '127.0.0.1', 'port' => 1, 'scheme' => 'smtp',
+        'username' => null, 'password' => null, 'from_address' => 'hr@example.com', 'from_name' => null]);
+
+    post('/forgot-password', ['email' => $user->email])
+        ->assertRedirect()
+        ->assertSessionHasErrors(['email' => 'The email could not be sent right now. Please try again later or ask HR.']);
 });
 
 test('reset password screen can be rendered', function () {

@@ -77,9 +77,15 @@ class User extends Authenticatable
         return $this->hasMany(LeaveRequest::class);
     }
 
+    /** Users who may sign in (not deactivated). */
+    public function scopeActive(Builder $query): void
+    {
+        $query->where('is_active', true);
+    }
+
     /** Active users who can approve leave for their own department, i.e. can be set as a department manager. */
     public function scopeTeamManagers(Builder $query): void
     {
-        $query->permission('leaves.approve-team')->where('is_active', true);
+        $query->permission('leaves.approve-team')->active();
     }
 }

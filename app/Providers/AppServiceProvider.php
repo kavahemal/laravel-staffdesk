@@ -21,7 +21,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
+        // Scoped, not singleton: a queue worker gets a fresh instance per job, so saved changes are seen.
+        $this->app->scoped(SettingService::class);
         $this->app->bind(WorkWeek::class, fn ($app) => $app->make(SettingService::class)->workWeek());
+        // Email settings from the Settings page, applied only when something is about to be mailed.
+        $this->app->afterResolving('mail.manager', fn () => $this->app->make(SettingService::class)->applyMailConfig());
     }
 
     /**
@@ -32,6 +36,10 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! app()->isProduction());
 
         View::composer('layouts.header', fn ($view) => $view->with(request()->user()->notificationBell()));
+        View::composer(['layouts.app', 'layouts.guest', 'layouts.header', 'layouts.sidebar'], fn ($view) => $view->with([
+            'companyName' => app(SettingService::class)->companyName(),
+            'logoUrl' => app(SettingService::class)->logoUrl(),
+        ]));
 
         // Deactivating deletes tokens too; this also covers a user switched off directly in the database.
         Sanctum::authenticateAccessTokensUsing(fn (PersonalAccessToken $token, bool $isValid) => $isValid && $token->tokenable?->is_active);

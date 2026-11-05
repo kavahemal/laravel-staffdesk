@@ -12,7 +12,7 @@
 
     @php
         $pendingOnly = $filters['status'] === \App\Enums\LeaveStatus::Pending->value;
-        $filtered = ! $pendingOnly || $filters['department'] || $filters['type'];
+        $filtered = !$pendingOnly || $filters['department'] || $filters['type'];
     @endphp
 
     <div class="overflow-hidden rounded-xl border border-gray-200 bg-white">
@@ -74,8 +74,23 @@
                                 <p class="text-gray-800">{{ $leave->leaveType->name }}</p>
                                 <p class="max-w-xs truncate text-theme-xs text-gray-500" title="{{ $leave->reason }}">{{ $leave->reason }}</p>
                             </td>
-                            <td class="px-5 py-4 whitespace-nowrap text-gray-500 sm:px-6">{{ $leave->period() }}</td>
-                            <td class="px-5 py-4 text-gray-500 sm:px-6">{{ format_days($leave->days) }}</td>
+                            <td class="px-5 py-4 whitespace-nowrap text-gray-500 sm:px-6">
+                                {{ $leave->period() }}
+                                @if (($othersOff = $context[$leave->id]['othersOff'] ?? collect())->isNotEmpty())
+                                    <p class="mt-1 flex items-center gap-1 text-theme-xs text-warning-600" title="Already off: {{ $othersOff->join(', ') }}">
+                                        <x-heroicon-o-users class="size-4" />
+                                        {{ $othersOff->count() === 1 ? $othersOff->first().' is' : $othersOff->count().' others are' }} off too
+                                    </p>
+                                @endif
+                            </td>
+                            <td class="px-5 py-4 text-gray-500 sm:px-6">
+                                {{ format_days($leave->days) }}
+                                @if (isset($context[$leave->id]))
+                                    <p class="mt-1 text-theme-xs whitespace-nowrap text-gray-500">
+                                        {{ $context[$leave->id]['remaining'] === null ? 'Unlimited' : format_days($context[$leave->id]['remaining']).' left' }}
+                                    </p>
+                                @endif
+                            </td>
                             <td class="px-5 py-4 sm:px-6">
                                 <x-badge :color="$leave->status->color()">{{ $leave->status->label() }}</x-badge>
                                 @if ($leave->actionedBy)

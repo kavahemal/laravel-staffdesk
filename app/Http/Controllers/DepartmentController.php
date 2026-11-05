@@ -6,7 +6,6 @@ use App\Http\Requests\DepartmentRequest;
 use App\Models\Department;
 use App\Models\User;
 use App\Support\Sorts\RelatedColumnSort;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -28,7 +27,7 @@ class DepartmentController extends Controller
             ->with('manager')
             ->withCount('employees')
             ->allowedFilters([
-                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(search_term($value))),
+                AllowedFilter::partial('search', 'name'),
             ])
             ->allowedSorts([
                 $byName,

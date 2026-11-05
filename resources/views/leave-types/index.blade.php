@@ -28,7 +28,7 @@
                     @forelse ($leaveTypes as $leaveType)
                         <tr class="transition hover:bg-gray-50/50">
                             <td class="px-5 py-4 font-medium text-gray-800 sm:px-6">{{ $leaveType->name }}</td>
-                            <td class="px-5 py-4 text-gray-500 sm:px-6">{{ $leaveType->yearly_quota === null ? 'Unlimited' : $leaveType->yearly_quota.' days' }}</td>
+                            <td class="px-5 py-4 text-gray-500 sm:px-6">{{ $leaveType->yearly_quota === null ? 'Unlimited' : $leaveType->yearly_quota . ' days' }}</td>
                             <td class="px-5 py-4 sm:px-6">
                                 <x-badge :color="$leaveType->is_active ? 'success' : 'gray'">{{ $leaveType->is_active ? 'Active' : 'Inactive' }}</x-badge>
                             </td>

@@ -17,9 +17,17 @@
                 'flex w-full items-start gap-3 border-b border-gray-100 px-4 py-3 text-start last:border-b-0 hover:bg-gray-50',
                 'bg-brand-50/40' => $notification->unread(),
             ])>
-                <span @class(['mt-1.5 size-2 shrink-0 rounded-full', 'bg-brand-500' => $notification->unread(), 'bg-transparent' => $notification->read()])></span>
+                <span @class([
+                    'mt-1.5 size-2 shrink-0 rounded-full',
+                    'bg-brand-500' => $notification->unread(),
+                    'bg-transparent' => $notification->read(),
+                ])></span>
                 <span class="flex-1">
-                    <span @class(['block text-sm', 'text-gray-800' => $notification->unread(), 'text-gray-500' => $notification->read()])>{{ $notification->data['message'] ?? '' }}</span>
+                    <span @class([
+                        'block text-sm',
+                        'text-gray-800' => $notification->unread(),
+                        'text-gray-500' => $notification->read(),
+                    ])>{{ $notification->data['message'] ?? '' }}</span>
                     <span class="mt-1 block text-theme-xs text-gray-400">{{ $notification->created_at->diffForHumans() }}</span>
                 </span>
             </button>

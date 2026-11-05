@@ -47,9 +47,9 @@ class LeaveController extends Controller
     {
         Gate::authorize('cancel', $leave);
 
-        // The policy saw it pending; 409 only when it was decided at the same moment.
+        // The policy saw it cancellable; 409 only when it was rejected or started at the same moment.
         return $this->leaves->cancel($leave)
             ? LeaveResource::make($leave->load('leaveType'))
-            : response()->json(['message' => 'Only pending leave can be cancelled.'], 409);
+            : response()->json(['message' => 'This leave can no longer be cancelled.'], 409);
     }
 }

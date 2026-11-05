@@ -65,7 +65,8 @@
                             <td class="px-5 py-4 sm:px-6">
                                 <div class="flex items-center justify-end gap-2">
                                     @can('cancel', $leave)
-                                        <form method="POST" action="{{ route('leaves.cancel', $leave) }}" data-confirm="Cancel leave?" data-confirm-button="Cancel leave">
+                                        <form method="POST" action="{{ route('leaves.cancel', $leave) }}" data-confirm="Cancel leave?" data-confirm-button="Cancel leave"
+                                            @if ($leave->status === \App\Enums\LeaveStatus::Approved) data-confirm-text="It is already approved – your approver will be notified and the days go back to your balance." @endif>
                                             @csrf
                                             @method('PATCH')
                                             <button type="submit" title="Cancel" class="rounded-lg p-2 text-gray-500 hover:bg-error-50 hover:text-error-500">

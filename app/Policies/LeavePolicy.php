@@ -25,9 +25,10 @@ class LeavePolicy
         return $user->can('leaves.record');
     }
 
+    /** Own leave that is pending, or approved and not started yet. */
     public function cancel(User $user, LeaveRequest $leave): bool
     {
-        return $leave->user_id === $user->id && $leave->status === LeaveStatus::Pending;
+        return $leave->user_id === $user->id && $leave->isCancellable();
     }
 
     /** The "Leave requests" page (team / all leave, approve and reject). */

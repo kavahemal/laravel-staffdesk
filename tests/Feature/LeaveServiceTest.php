@@ -108,17 +108,29 @@ test('a request above the remaining balance is rejected; pending leave counts as
         ->and(applyLeave($user, $type, '2026-11-09', '2026-11-10'))->toBe([]);
 });
 
-test('cancel only changes a request that is still pending', function () {
+test('cancel works on pending and on approved leave that has not started', function () {
     $pending = LeaveRequest::factory()->create();
-    $approved = LeaveRequest::factory()->approved()->create();
+    $approvedLater = LeaveRequest::factory()->approved()->on('2026-11-05')->create();
     $service = app(LeaveService::class);
 
     expect($service->cancel($pending))->toBeTrue()
         ->and($pending->fresh()->status)->toBe(LeaveStatus::Cancelled)
-        // e.g. approved by HR after the employee opened the list
-        ->and($service->cancel($approved))->toBeFalse()
-        ->and($approved->fresh()->status)->toBe(LeaveStatus::Approved);
+        ->and($service->cancel($approvedLater))->toBeTrue()
+        ->and($approvedLater->fresh()->status)->toBe(LeaveStatus::Cancelled);
 });
+
+test('cancel refuses leave that has started or was decided against', function (LeaveRequest $leave) {
+    // e.g. the list was opened yesterday, or HR rejected it in the meantime
+    $status = $leave->status;
+
+    expect(app(LeaveService::class)->cancel($leave))->toBeFalse()
+        ->and($leave->fresh()->status)->toBe($status);
+})->with([
+    'approved, starts today' => fn () => LeaveRequest::factory()->approved()->on('2026-11-04', '2026-11-06')->create(),
+    'approved, in the past' => fn () => LeaveRequest::factory()->approved()->on('2026-11-02')->create(),
+    'rejected' => fn () => LeaveRequest::factory()->rejected()->create(),
+    'cancelled' => fn () => LeaveRequest::factory()->cancelled()->create(),
+]);
 
 // Half days
 

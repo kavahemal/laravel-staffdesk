@@ -6,6 +6,7 @@ use App\Models\User;
 use App\Services\EmployeeService;
 use Database\Seeders\RolesSeeder;
 use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Auth;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\assertAuthenticatedAs;
@@ -55,7 +56,7 @@ test('HR creates an employee: login account, role and profile in one go', functi
 
 test('the new employee can log in with the initial password', function () {
     actingAs(userWithRole('HR'))->post(route('employees.store'), employeeData());
-    auth()->logout();
+    Auth::logout();
 
     post('/login', ['email' => 'jane@example.com', 'password' => 'secret-password']);
 

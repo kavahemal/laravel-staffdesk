@@ -5,6 +5,7 @@ use App\Models\Department;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Notifications\LeaveCancelled;
 use App\Notifications\LeaveRequested;
 use App\Notifications\LeaveStatusChanged;
 use App\Services\LeaveService;
@@ -74,6 +75,22 @@ test('nothing is sent when the leave was no longer pending', function () {
     app(LeaveService::class)->decide($leave, userWithRole('HR'), LeaveStatus::Approved, null);
 
     Notification::assertNothingSent();
+});
+
+test('cancelling approved leave notifies the approvers; cancelling pending leave does not', function () {
+    $people = approvalPeople();
+    $leave = applyFor($people['sales employee']);
+    app(LeaveService::class)->decide($leave, $people['manager'], LeaveStatus::Approved, null);
+    $pending = LeaveRequest::factory()->for($people['sales employee'])->on('2026-11-20')->create();
+    Notification::fake();
+
+    app(LeaveService::class)->cancel($pending);
+    Notification::assertNothingSent();
+
+    app(LeaveService::class)->cancel($leave);
+    Notification::assertSentTo([$people['manager'], $people['hr'], $people['admin']], LeaveCancelled::class,
+        fn (LeaveCancelled $notification, array $channels, User $to) => str_contains($notification->toArray($to)['message'], 'Sam Sales cancelled their approved Casual Leave'));
+    Notification::assertNotSentTo([$people['sales employee'], $people['support employee']], LeaveCancelled::class);
 });
 
 // Header bell

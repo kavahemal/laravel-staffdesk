@@ -70,14 +70,15 @@ document.addEventListener('submit', async (event) => {
 });
 
 // Date pickers: <input data-datepicker> (use <x-date-input>). The form still sends Y-m-d;
-// the user sees the same format as config('hrms.date_format'). Options via data attributes:
+// the user sees the date format from Settings. Options via data attributes:
 // data-datepicker="range", data-min-date="today", data-max-date="2026-12-31",
-// data-disable-weekdays="0,6" (getDay() numbers, 0 = Sunday – same as Carbon).
+// data-disable-weekdays="0,6" (getDay() numbers, 0 = Sunday – same as Carbon),
+// data-min-date-from="from_date" (id of a start date input: no earlier date can be picked here).
 window.initDatepickers = (root = document) => {
     root.querySelectorAll('input[data-datepicker]').forEach((input) => {
         if (input._flatpickr) return;
 
-        const { datepicker, displayFormat, minDate, maxDate, disableWeekdays } = input.dataset;
+        const { datepicker, displayFormat, minDate, maxDate, disableWeekdays, minDateFrom } = input.dataset;
         const offDays = (disableWeekdays ?? '').split(',').filter((day) => day !== '').map(Number);
         flatpickr(input, {
             mode: datepicker === 'range' ? 'range' : 'single',
@@ -89,6 +90,17 @@ window.initDatepickers = (root = document) => {
             disable: offDays.length ? [(date) => offDays.includes(date.getDay())] : [],
             locale: { firstDayOfWeek: 1, rangeSeparator: ' – ' },
         });
+
+        const start = minDateFrom ? document.getElementById(minDateFrom) : null;
+        if (start) {
+            // Y-m-d strings compare correctly as text. The server still checks the order.
+            const follow = () => {
+                input._flatpickr.set('minDate', start.value || minDate || null);
+                if (start.value && input.value && input.value < start.value) input._flatpickr.clear();
+            };
+            start.addEventListener('change', follow);
+            follow();
+        }
     });
 };
 

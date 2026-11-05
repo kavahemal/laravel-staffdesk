@@ -6,7 +6,7 @@
         $currentDepartment = (string) old('department_id', $employee->department_id);
     @endphp
 
-    <div class="max-w-4xl rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
         <form method="POST" novalidate x-data="{ busy: false }" @submit="busy = true" action="{{ $employee->exists ? route('employees.update', $employee) : route('employees.store') }}">
             @csrf
             @if ($employee->exists)

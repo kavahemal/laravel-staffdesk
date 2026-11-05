@@ -152,16 +152,27 @@ test('an employee cancels their own pending leave', function () {
     expect($leave->fresh()->status)->toBe(LeaveStatus::Cancelled);
 });
 
-test('only own pending leave can be cancelled', function (string $owner, LeaveStatus $status) {
+test('an employee cancels their approved leave before it starts', function () {
     $employee = userWithRole('Employee');
-    $leave = myLeave($owner === 'me' ? $employee : User::factory()->create(), 'Casual Leave', '2026-11-09', $status);
+    $leave = myLeave($employee, 'Casual Leave', '2026-11-09', LeaveStatus::Approved);
+
+    actingAs($employee)->get(route('leaves.index'))->assertSee('your approver will be notified');
+
+    actingAs($employee)->patch(route('leaves.cancel', $leave))->assertSessionHas('success', 'Leave cancelled.');
+
+    expect($leave->fresh()->status)->toBe(LeaveStatus::Cancelled);
+});
+
+test('other people\'s leave and leave that started or was decided against can not be cancelled', function (string $owner, LeaveStatus $status, string $from) {
+    $employee = userWithRole('Employee');
+    $leave = myLeave($owner === 'me' ? $employee : User::factory()->create(), 'Casual Leave', $from, $status);
 
     actingAs($employee)->patch(route('leaves.cancel', $leave))->assertForbidden();
 
     expect($leave->fresh()->status)->toBe($status);
 })->with([
-    'someone else\'s pending' => ['other', LeaveStatus::Pending],
-    'my approved' => ['me', LeaveStatus::Approved],
-    'my rejected' => ['me', LeaveStatus::Rejected],
-    'my cancelled' => ['me', LeaveStatus::Cancelled],
+    'someone else\'s pending' => ['other', LeaveStatus::Pending, '2026-11-09'],
+    'my approved, starting today' => ['me', LeaveStatus::Approved, '2026-11-04'],
+    'my rejected' => ['me', LeaveStatus::Rejected, '2026-11-09'],
+    'my cancelled' => ['me', LeaveStatus::Cancelled, '2026-11-09'],
 ]);

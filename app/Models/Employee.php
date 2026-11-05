@@ -30,17 +30,17 @@ class Employee extends Model
         ];
     }
 
-    /** Matches employee code, designation, name or email; `%` and `_` are taken literally. */
-    public function scopeSearch(Builder $query, string $term): void
+    /** Employees whose login is active. */
+    public function scopeActive(Builder $query): void
     {
-        $like = like_pattern($term);
+        $query->whereHas('user', fn (Builder $user) => $user->active());
+    }
 
-        $query->where(fn (Builder $query) => $query
-            ->where('employee_code', 'like', $like)
-            ->orWhere('designation', 'like', $like)
-            ->orWhereHas('user', fn (Builder $user) => $user
-                ->where('name', 'like', $like)
-                ->orWhere('email', 'like', $like)));
+    /** The manager's team: people in departments they manage, without the manager. */
+    public function scopeTeamOf(Builder $query, User $manager): void
+    {
+        $query->whereNot('user_id', $manager->id)
+            ->whereHas('department', fn (Builder $department) => $department->where('manager_id', $manager->id));
     }
 
     public function user(): BelongsTo

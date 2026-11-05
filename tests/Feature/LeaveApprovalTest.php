@@ -2,7 +2,9 @@
 
 use App\Enums\LeaveStatus;
 use App\Models\Department;
+use App\Models\Employee;
 use App\Models\LeaveRequest;
+use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveService;
 use Illuminate\Support\Carbon;
@@ -78,6 +80,28 @@ test('the list starts with the earliest leave and can be filtered and sorted', f
     actingAs($hr)->get(route('approvals.index', ['filter' => ['department' => Department::firstWhere('name', 'Sales')->id]]))
         ->assertSeeText('Later trip')->assertDontSeeText('Early trip');
     actingAs($hr)->get(route('approvals.index', ['sort' => 'reason']))->assertBadRequest();
+});
+
+test('pending rows show the balance left and who in the department is already off', function () {
+    $people = approvalPeople();
+    $casual = LeaveType::factory()->create(['name' => 'Casual Leave', 'yearly_quota' => 10]);
+    bookedLeave($people['sales employee'], $casual, '2026-11-09', '2026-11-10', 2, LeaveStatus::Pending);
+    bookedLeave($people['sales employee'], $casual, '2026-03-02', null, 3);
+    bookedLeave($people['sales employee'], $casual, '2025-03-02', null, 4);           // last year
+    bookedLeave($people['manager'], $casual, '2026-11-10', null, 1);                  // same department, overlaps
+    bookedLeave(userWithRole('Employee'), $casual, '2026-11-10', null, 1);            // no department
+    bookedLeave($people['support employee'], $casual, '2026-11-10', null, 1);         // other department
+    bookedLeave($people['support employee'], $casual, '2026-11-20', null, 1, LeaveStatus::Pending);
+    Employee::factory()->for($sam2 = userWithRole('Employee', ['name' => 'Sam Rejected']))
+        ->for(Department::firstWhere('name', 'Sales'))->create();
+    bookedLeave($sam2, $casual, '2026-11-09', null, 1, LeaveStatus::Rejected);        // not off
+
+    actingAs($people['hr'])->get(route('approvals.index'))
+        ->assertOk()
+        ->assertSeeInOrder(['Sam Sales', '2', '5 left', 'Alex Support', '8 left'])
+        ->assertSee('title="Already off: '.$people['manager']->name.'"', false)
+        ->assertSeeText($people['manager']->name.' is off too')
+        ->assertDontSee('Sam Rejected is off too');
 });
 
 test('the list shows an empty state', function () {

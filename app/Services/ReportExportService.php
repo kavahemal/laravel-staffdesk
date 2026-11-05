@@ -3,13 +3,13 @@
 namespace App\Services;
 
 use App\Enums\ExportStatus;
+use App\Http\Queries\LeaveReportQuery;
 use App\Jobs\GenerateLeaveExport;
 use App\Models\LeaveRequest;
 use App\Models\ReportExport;
 use App\Models\User;
 use App\Notifications\ExportReady;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Carbon;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
 class ReportExportService
@@ -45,7 +45,7 @@ class ReportExportService
         $rows = 0;
 
         // lazy() reads in chunks, so a large report never sits in memory as one collection.
-        foreach ($this->leaveQuery($export->filters)->lazy() as $leave) {
+        foreach (LeaveReportQuery::for(new Request(['filter' => $export->filters]))->lazy() as $leave) {
             fputcsv($stream, $this->row($leave), escape: '');
             $rows++;
         }
@@ -63,19 +63,6 @@ class ReportExportService
     public function markFailed(ReportExport $export): void
     {
         $export->update(['status' => ExportStatus::Failed]);
-    }
-
-    /** The same filters as the report page, oldest leave first. */
-    private function leaveQuery(array $filters): Builder
-    {
-        return LeaveRequest::with(['leaveType', 'actionedBy', 'user.employee.department'])
-            ->when($filters['from'] ?? null, fn (Builder $query, string $date) => $query->endingFrom(Carbon::parse($date)->startOfDay()))
-            ->when($filters['to'] ?? null, fn (Builder $query, string $date) => $query->startingBy(Carbon::parse($date)->startOfDay()))
-            ->when($filters['type'] ?? null, fn (Builder $query, int $type) => $query->where('leave_type_id', $type))
-            ->when($filters['status'] ?? null, fn (Builder $query, string $status) => $query->where('status', $status))
-            ->when($filters['department'] ?? null, fn (Builder $query, int $department) => $query->inDepartment($department))
-            ->orderBy('from_date')
-            ->orderBy('leave_requests.id');
     }
 
     private function row(LeaveRequest $leave): array

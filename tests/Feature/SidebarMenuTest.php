@@ -19,6 +19,19 @@ test('each role sees exactly its menu items', function (string $role, array $vis
     'Employee' => ['Employee', ['Dashboard', 'My leaves', 'Leave balance']],
 ]);
 
+test('menu sections show only when the user can see one of their items', function (string $role, array $sections) {
+    $html = actingAs(userWithRole($role))->get(route('dashboard'))->getContent();
+
+    foreach (collect(config('menu'))->pluck('group')->unique() as $group) {
+        expect(str_contains($html, ">{$group}</span>"))->toBe(in_array($group, $sections, true), "{$role}: {$group}");
+    }
+})->with([
+    'Admin' => ['Admin', ['Menu', 'Leave management', 'Organisation']],
+    'HR' => ['HR', ['Menu', 'My leave', 'Leave management', 'Organisation']],
+    'Manager' => ['Manager', ['Menu', 'My leave', 'Leave management']],
+    'Employee' => ['Employee', ['Menu', 'My leave']],
+]);
+
 test('the current page is highlighted in the menu', function () {
     actingAs(userWithRole('Admin'))
         ->get(route('employees.index'))

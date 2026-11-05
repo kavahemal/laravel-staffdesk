@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeStatusController;
@@ -14,9 +15,10 @@ use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
+Route::get('logo', [SettingController::class, 'logo'])->name('logo');
 
 Route::middleware('auth')->group(function () {
-    Route::view('/dashboard', 'dashboard')->name('dashboard');
+    Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('notifications/bell', [NotificationController::class, 'bell'])->name('notifications.bell');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
@@ -47,6 +49,7 @@ Route::middleware('auth')->group(function () {
 
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [SettingController::class, 'update'])->name('settings.update');
+    Route::post('settings/test-email', [SettingController::class, 'testEmail'])->name('settings.test-email');
 });
 
 require __DIR__.'/auth.php';

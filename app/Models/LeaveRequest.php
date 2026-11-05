@@ -76,6 +76,13 @@ class LeaveRequest extends Model
         return $this->half_day ? $period.', '.strtolower($this->half_day->label()) : $period;
     }
 
+    /** The owner may still cancel it: pending, or approved and not started yet. */
+    public function isCancellable(): bool
+    {
+        return $this->status === LeaveStatus::Pending
+            || ($this->status === LeaveStatus::Approved && $this->from_date->isAfter(Carbon::today()));
+    }
+
     /** Pending or approved: holds its dates and counts against the balance. */
     public function scopeBooked(Builder $query): void
     {

@@ -164,10 +164,10 @@ test('users without leaves.apply can not use the leave endpoints', function () {
     postJson(route('api.v1.leaves.store'), [])->assertForbidden();
 });
 
-test('cancel: own pending leave only', function () {
+test('cancel: own leave that has not started only', function () {
     $user = userWithRole('Employee');
     $pending = LeaveRequest::factory()->for($user)->on('2026-11-09')->create();
-    $approved = LeaveRequest::factory()->for($user)->on('2026-11-16')->create(['status' => LeaveStatus::Approved]);
+    $approved = LeaveRequest::factory()->for($user)->on('2026-11-02', '2026-11-05')->create(['status' => LeaveStatus::Approved]);
     $others = LeaveRequest::factory()->for(userWithRole('Employee'))->on('2026-11-09')->create();
     Sanctum::actingAs($user);
 

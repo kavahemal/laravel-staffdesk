@@ -11,7 +11,7 @@ use App\Models\LeaveType;
 use App\Models\User;
 use App\Services\LeaveService;
 use App\Support\LeaveBalance;
-use App\Support\Sorts\RelatedColumnSort;
+use App\Support\Sorts\LeaveSorts;
 use App\Support\WorkWeek;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -20,7 +20,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\Enums\SortDirection;
 use Spatie\QueryBuilder\QueryBuilder;
 
@@ -33,20 +32,14 @@ class LeaveController extends Controller
     {
         Gate::authorize('viewAny', LeaveRequest::class);
 
-        $byFrom = AllowedSort::field('from', 'from_date')->defaultDirection(SortDirection::DESCENDING);
+        $byFrom = LeaveSorts::from()->defaultDirection(SortDirection::DESCENDING);
 
         $leaves = QueryBuilder::for($request->user()->leaveRequests()->with('leaveType'))
             ->allowedFilters([
                 AllowedFilter::exact('status'),
                 AllowedFilter::exact('type', 'leave_type_id'),
             ])
-            ->allowedSorts([
-                $byFrom,
-                AllowedSort::custom('type', new RelatedColumnSort('leave_types', 'name', 'leave_type_id')),
-                AllowedSort::field('days'),
-                AllowedSort::field('status'),
-                AllowedSort::field('applied', 'created_at'),
-            ])
+            ->allowedSorts([$byFrom, ...LeaveSorts::columns()])
             ->defaultSort($byFrom)
             ->orderByDesc('leave_requests.id')
             ->paginate(config('hrms.per_page'))
@@ -54,7 +47,7 @@ class LeaveController extends Controller
 
         return view('leaves.index', [
             'leaves' => $leaves,
-            'leaveTypes' => LeaveType::orderBy('name')->get(['id', 'name']),
+            'leaveTypes' => LeaveType::forSelect()->get(),
             'statuses' => LeaveStatus::cases(),
             'filters' => [
                 'status' => (string) $request->input('filter.status', ''),
@@ -91,7 +84,7 @@ class LeaveController extends Controller
             ...$this->formData($workWeek, LeaveType::where('is_active', true)->orderBy('name')->pluck('name', 'id')),
             'action' => route('leaves.record.store'),
             'cancelUrl' => route('approvals.index'),
-            'employees' => User::where('is_active', true)
+            'employees' => User::active()
                 ->whereKeyNot($request->user()->id)
                 ->whereHas('employee')
                 ->with('employee:id,user_id,employee_code')
@@ -137,7 +130,7 @@ class LeaveController extends Controller
 
         return $this->leaves->cancel($leave)
             ? back()->with('success', 'Leave cancelled.')
-            : back()->with('error', 'Only pending leave can be cancelled.');
+            : back()->with('error', 'This leave can no longer be cancelled.');
     }
 
     /** @param  Collection<int, string>  $leaveTypes  option label per leave type id */

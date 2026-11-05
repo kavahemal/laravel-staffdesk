@@ -32,9 +32,9 @@ class LeaveType extends Model
         return $this->hasMany(LeaveRequest::class);
     }
 
-    /** Matches the name; `%` and `_` are taken literally. */
-    public function scopeSearch(Builder $query, string $term): void
+    /** Id + name by name, for filter dropdowns (inactive types included – old leave still uses them). */
+    public function scopeForSelect(Builder $query): void
     {
-        $query->where('name', 'like', like_pattern($term));
+        $query->orderBy('name')->select(['id', 'name']);
     }
 }

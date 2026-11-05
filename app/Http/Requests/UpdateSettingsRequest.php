@@ -17,7 +17,22 @@ class UpdateSettingsRequest extends FormRequest
 
     public function rules(): array
     {
-        $rules = ['work_week' => ['required', 'array']];
+        $rules = [
+            'company_name' => ['required', 'string', 'max:50'],
+            'date_format' => ['required', Rule::in(config('hrms.date_formats'))],
+            // No SVG: an SVG served from our own domain can run scripts.
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:'.config('hrms.logo_max_kb')],
+            'remove_logo' => ['boolean'],
+            'mail_mailer' => ['required', Rule::in(['log', 'smtp'])],
+            'mail_host' => ['nullable', 'required_if:mail_mailer,smtp', 'string', 'max:255'],
+            'mail_port' => ['nullable', 'required_if:mail_mailer,smtp', 'integer', 'between:1,65535'],
+            'mail_scheme' => ['nullable', 'required_if:mail_mailer,smtp', Rule::in(['smtp', 'smtps'])],
+            'mail_username' => ['nullable', 'string', 'max:255'],
+            'mail_password' => ['nullable', 'string', 'max:255'],
+            'mail_from_address' => ['required', 'email', 'max:255'],
+            'mail_from_name' => ['nullable', 'string', 'max:100'],
+            'work_week' => ['required', 'array'],
+        ];
 
         foreach (WorkWeek::DISPLAY_ORDER as $day) {
             $rules["work_week.{$day}"] = ['required', Rule::enum(WorkDay::class)];
@@ -41,6 +56,30 @@ class UpdateSettingsRequest extends FormRequest
 
     public function attributes(): array
     {
-        return collect(WorkWeek::dayNames())->mapWithKeys(fn (string $name, int $day) => ["work_week.{$day}" => $name])->all();
+        return [
+            ...collect(WorkWeek::dayNames())->mapWithKeys(fn (string $name, int $day) => ["work_week.{$day}" => $name])->all(),
+            'mail_mailer' => 'send emails',
+            'mail_host' => 'host',
+            'mail_port' => 'port',
+            'mail_scheme' => 'encryption',
+            'mail_username' => 'username',
+            'mail_password' => 'password',
+            'mail_from_address' => 'from address',
+            'mail_from_name' => 'from name',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return ['required_if' => 'The :attribute field is required to send emails through SMTP.'];
+    }
+
+    /** The validated mail_* fields without the prefix, for SettingService::saveMail(). */
+    public function mailSettings(): array
+    {
+        return collect($this->validated())
+            ->filter(fn ($value, string $key) => str_starts_with($key, 'mail_'))
+            ->mapWithKeys(fn ($value, string $key) => [substr($key, 5) => $key === 'mail_port' && $value !== null ? (int) $value : $value])
+            ->all();
     }
 }

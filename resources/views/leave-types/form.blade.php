@@ -1,24 +1,26 @@
 <x-app-layout>
     <x-slot name="header">{{ $leaveType->exists ? 'Edit leave type' : 'Add leave type' }}</x-slot>
 
-    <div class="max-w-2xl rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
+    <div class="rounded-2xl border border-gray-200 bg-white p-5 lg:p-6">
         <form method="POST" class="space-y-5" novalidate x-data="{ busy: false }" @submit="busy = true" action="{{ $leaveType->exists ? route('leave-types.update', $leaveType) : route('leave-types.store') }}">
             @csrf
             @if ($leaveType->exists)
                 @method('PUT')
             @endif
 
-            <div>
-                <x-input-label for="name">Name<span class="text-error-500">*</span></x-input-label>
-                <x-text-input id="name" name="name" :value="old('name', $leaveType->name)" required maxlength="50" autofocus />
-                <x-input-error :messages="$errors->get('name')" />
-            </div>
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+                <div>
+                    <x-input-label for="name">Name<span class="text-error-500">*</span></x-input-label>
+                    <x-text-input id="name" name="name" :value="old('name', $leaveType->name)" required maxlength="50" autofocus />
+                    <x-input-error :messages="$errors->get('name')" />
+                </div>
 
-            <div>
-                <x-input-label for="yearly_quota" value="Yearly quota (days)" />
-                <x-text-input id="yearly_quota" name="yearly_quota" type="number" min="1" max="365" :value="old('yearly_quota', $leaveType->yearly_quota)" />
-                <p class="mt-1.5 text-theme-xs text-gray-500">Leave empty for unlimited (e.g. unpaid leave).</p>
-                <x-input-error :messages="$errors->get('yearly_quota')" />
+                <div>
+                    <x-input-label for="yearly_quota" value="Yearly quota (days)" />
+                    <x-text-input id="yearly_quota" name="yearly_quota" type="number" min="1" max="365" :value="old('yearly_quota', $leaveType->yearly_quota)" />
+                    <p class="mt-1.5 text-theme-xs text-gray-500">Leave empty for unlimited (e.g. unpaid leave).</p>
+                    <x-input-error :messages="$errors->get('yearly_quota')" />
+                </div>
             </div>
 
             <div>

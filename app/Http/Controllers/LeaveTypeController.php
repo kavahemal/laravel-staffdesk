@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LeaveTypeRequest;
 use App\Models\LeaveType;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -23,7 +22,7 @@ class LeaveTypeController extends Controller
 
         $leaveTypes = QueryBuilder::for(LeaveType::class)
             ->allowedFilters([
-                AllowedFilter::callback('search', fn (Builder $query, $value) => $query->search(search_term($value))),
+                AllowedFilter::partial('search', 'name'),
             ])
             ->allowedSorts([
                 $byName,

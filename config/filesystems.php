@@ -31,6 +31,14 @@ return [
     'disks' => [
 
         // Leave report CSVs, written by a queued job; downloaded only through a signed link.
+        // Logo uploaded on the Settings page; served by the `logo` route, so no storage:link is needed.
+        'branding' => [
+            'driver' => 'local',
+            'root' => storage_path('app/branding'),
+            'throw' => true,
+            'report' => false,
+        ],
+
         'exports' => [
             'driver' => 'local',
             'root' => storage_path('app/exports'),

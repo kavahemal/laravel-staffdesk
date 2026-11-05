@@ -8,14 +8,13 @@ use App\Models\Department;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Services\LeaveService;
-use App\Support\Sorts\RelatedColumnSort;
+use App\Support\Sorts\LeaveSorts;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 use Spatie\QueryBuilder\AllowedFilter;
-use Spatie\QueryBuilder\AllowedSort;
 use Spatie\QueryBuilder\QueryBuilder;
 
 class LeaveApprovalController extends Controller
@@ -31,7 +30,7 @@ class LeaveApprovalController extends Controller
         Gate::authorize('viewApprovals', LeaveRequest::class);
 
         $user = $request->user();
-        $byFrom = AllowedSort::field('from', 'from_date');
+        $byFrom = LeaveSorts::from();
 
         $leaves = QueryBuilder::for(LeaveRequest::visibleToApprover($user)->with(['leaveType', 'actionedBy', 'user.employee.department']))
             ->allowedFilters([
@@ -41,14 +40,7 @@ class LeaveApprovalController extends Controller
                 AllowedFilter::callback('department', fn (Builder $query, $value) => $query->inDepartment((int) $value)),
                 AllowedFilter::exact('type', 'leave_type_id'),
             ])
-            ->allowedSorts([
-                $byFrom,
-                AllowedSort::custom('employee', new RelatedColumnSort('users', 'name', 'user_id')),
-                AllowedSort::custom('type', new RelatedColumnSort('leave_types', 'name', 'leave_type_id')),
-                AllowedSort::field('days'),
-                AllowedSort::field('status'),
-                AllowedSort::field('applied', 'created_at'),
-            ])
+            ->allowedSorts([$byFrom, ...LeaveSorts::columns(withEmployee: true)])
             ->defaultSort($byFrom)
             ->orderBy('leave_requests.id')
             ->paginate(config('hrms.per_page'))
@@ -56,9 +48,10 @@ class LeaveApprovalController extends Controller
 
         return view('approvals.index', [
             'leaves' => $leaves,
+            'context' => $this->leaves->approvalContext($leaves->getCollection()),
             // A manager only sees their own team, so the department filter is for HR/Admin.
-            'departments' => $user->can('leaves.approve-any') ? Department::orderBy('name')->get(['id', 'name']) : collect(),
-            'leaveTypes' => LeaveType::orderBy('name')->get(['id', 'name']),
+            'departments' => $user->can('leaves.approve-any') ? Department::forSelect()->get() : collect(),
+            'leaveTypes' => LeaveType::forSelect()->get(),
             'statuses' => LeaveStatus::cases(),
             'filters' => [
                 'status' => (string) $request->input('filter.status', LeaveStatus::Pending->value),

@@ -60,4 +60,5 @@ test('guests are sent to the login page from every app page', function (string $
     ['POST', 'notifications.read-all', null],
     ['GET', 'settings.edit', null],
     ['PUT', 'settings.update', null],
+    ['POST', 'settings.test-email', null],
 ]);

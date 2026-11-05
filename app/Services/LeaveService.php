@@ -8,6 +8,7 @@ use App\Enums\WorkDay;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
 use App\Models\User;
+use App\Notifications\LeaveCancelled;
 use App\Notifications\LeaveRecorded;
 use App\Notifications\LeaveRequested;
 use App\Notifications\LeaveStatusChanged;
@@ -125,7 +126,7 @@ class LeaveService
         $leave->loadMissing('user.employee.department.manager');
         $manager = $leave->user->employee?->department?->manager;
 
-        return User::permission('leaves.approve-any')->where('is_active', true)->get()
+        return User::permission('leaves.approve-any')->active()->get()
             ->when($manager?->is_active, fn (EloquentCollection $users) => $users->push($manager))
             ->unique('id')
             ->reject(fn (User $user) => $user->id === $leave->user_id)
@@ -165,22 +166,32 @@ class LeaveService
         });
     }
 
-    /** False when the leave is no longer pending (e.g. approved in the meantime). */
+    /**
+     * Cancel pending leave, or approved leave that hasn't started (the approvers are told, the days return
+     * to the balance). False when it can no longer be cancelled, e.g. rejected or started in the meantime.
+     */
     public function cancel(LeaveRequest $leave): bool
     {
-        // Conditional update, so a cancel and an approval at the same moment can't both win.
-        $updated = LeaveRequest::whereKey($leave->id)
-            ->where('status', LeaveStatus::Pending)
-            ->update(['status' => LeaveStatus::Cancelled]);
+        return DB::transaction(function () use ($leave) {
+            // Locked, so a cancel and an approval at the same moment can't both win.
+            $current = LeaveRequest::whereKey($leave->id)->lockForUpdate()->first();
 
-        if ($updated === 0) {
-            return false;
-        }
+            if (! $current?->isCancellable()) {
+                return false;
+            }
 
-        $leave->status = LeaveStatus::Cancelled;
-        $leave->syncOriginalAttribute('status');
+            $wasApproved = $current->status === LeaveStatus::Approved;
+            $current->update(['status' => LeaveStatus::Cancelled]);
 
-        return true;
+            $leave->status = LeaveStatus::Cancelled;
+            $leave->syncOriginalAttribute('status');
+
+            if ($wasApproved) {
+                Notification::send($this->approversFor($leave), new LeaveCancelled($leave));
+            }
+
+            return true;
+        });
     }
 
     /**
@@ -208,6 +219,58 @@ class LeaveService
                 approved: $sum($type->id, LeaveStatus::Approved),
                 pending: $sum($type->id, LeaveStatus::Pending),
             )]);
+    }
+
+    /**
+     * For the pending requests on the "Leave requests" page: days left of that type (the request itself
+     * counts as used, as everywhere) and who else in the employee's department is already off on those days.
+     * Two queries for the whole page.
+     *
+     * @param  Collection<int, LeaveRequest>  $leaves  with user.employee and leaveType loaded
+     * @return array<int, array{remaining: ?float, othersOff: Collection<int, string>}> keyed by leave id
+     */
+    public function approvalContext(Collection $leaves): array
+    {
+        $pending = $leaves->where('status', LeaveStatus::Pending);
+
+        if ($pending->isEmpty()) {
+            return [];
+        }
+
+        $booked = LeaveRequest::booked()
+            ->whereIn('user_id', $pending->pluck('user_id')->unique())
+            ->where(fn ($query) => $pending->map(fn (LeaveRequest $leave) => $leave->from_date->year)->unique()
+                ->each(fn (int $year) => $query->orWhere(fn ($query) => $query->inYear($year))))
+            ->get(['user_id', 'leave_type_id', 'from_date', 'days', 'status']);
+
+        $departmentIds = $pending->map(fn (LeaveRequest $leave) => $leave->user->employee?->department_id)->filter()->unique();
+
+        $off = LeaveRequest::where('status', LeaveStatus::Approved)
+            ->overlapping($pending->min('from_date'), $pending->max('to_date'))
+            ->whereHas('user.employee', fn ($query) => $query->whereIn('department_id', $departmentIds))
+            ->with('user.employee')
+            ->orderBy('from_date')
+            ->get();
+
+        return $pending->mapWithKeys(function (LeaveRequest $leave) use ($booked, $off) {
+            $own = $booked->where('user_id', $leave->user_id)->where('leave_type_id', $leave->leave_type_id)
+                ->filter(fn (LeaveRequest $other) => $other->from_date->year === $leave->from_date->year);
+
+            $balance = new LeaveBalance(
+                $leave->leaveType,
+                approved: (float) $own->where('status', LeaveStatus::Approved)->sum('days'),
+                pending: (float) $own->where('status', LeaveStatus::Pending)->sum('days'),
+            );
+
+            $othersOff = $off->filter(fn (LeaveRequest $other) => $other->user_id !== $leave->user_id
+                && $other->user->employee?->department_id === $leave->user->employee?->department_id
+                && $other->from_date->lte($leave->to_date) && $other->to_date->gte($leave->from_date))
+                ->map(fn (LeaveRequest $other) => $other->user->name)
+                ->unique()
+                ->values();
+
+            return [$leave->id => ['remaining' => $balance->remaining(), 'othersOff' => $othersOff]];
+        })->all();
     }
 
     /** Days left of the type's yearly quota (pending + approved count as used); null = unlimited. */
