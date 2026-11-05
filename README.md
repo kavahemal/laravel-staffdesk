@@ -88,7 +88,7 @@ cd laravel-staffdesk
 composer install
 cp .env.example .env              # set DB_USERNAME / DB_PASSWORD if needed (database: staffdesk)
 php artisan key:generate
-php artisan migrate --seed        # tables, roles, demo company and demo logins
+php artisan migrate --seed        # answer "yes" to create the database; then tables, roles, demo company and logins
 npm install && npm run build
 php artisan serve                 # http://localhost:8000
 ```

@@ -6,7 +6,6 @@
 @import 'flatpickr/dist/flatpickr.min.css';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
-@source '../../storage/framework/views/*.php';
 
 /* Light mode only: `dark:` classes (e.g. in Laravel's pagination view) apply only under a .dark class we never set. */
 @custom-variant dark (&:where(.dark, .dark *));
