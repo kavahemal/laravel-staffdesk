@@ -15,7 +15,7 @@ class AuthController extends Controller
         $user = $request->authenticatedUser();
         $token = $user->createToken(
             $request->validated('device_name') ?? 'api',
-            expiresAt: now()->addDays(config('hrms.api_token_days')),
+            expiresAt: now()->addDays(config('staffdesk.api_token_days')),
         );
 
         return response()->json([

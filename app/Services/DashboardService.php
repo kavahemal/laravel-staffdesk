@@ -50,7 +50,7 @@ class DashboardService
             'recent' => $user->leaveRequests()->with('leaveType')
                 ->latest()
                 ->orderByDesc('id')
-                ->limit(config('hrms.dashboard_recent_leaves'))
+                ->limit(config('staffdesk.dashboard_recent_leaves'))
                 ->get(),
         ];
     }

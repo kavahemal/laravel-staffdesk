@@ -82,7 +82,7 @@ test('an unknown sort or filter is rejected', function () {
 
 test('pagination links keep the filter and sort', function () {
     // One page plus a few rows (the beforeEach already made 2).
-    foreach (range(3, config('hrms.per_page') + 5) as $i) {
+    foreach (range(3, config('staffdesk.per_page') + 5) as $i) {
         listEmployee("Finance Person {$i}", "f{$i}@example.com", 'Finance', sprintf('EMP-%04d', $i));
     }
 

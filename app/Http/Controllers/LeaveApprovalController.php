@@ -43,7 +43,7 @@ class LeaveApprovalController extends Controller
             ->allowedSorts([$byFrom, ...LeaveSorts::columns(withEmployee: true)])
             ->defaultSort($byFrom)
             ->orderBy('leave_requests.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return view('approvals.index', [

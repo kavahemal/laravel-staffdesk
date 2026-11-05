@@ -6,12 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ $companyName }}</title>
-    @if ($logoUrl)
-        <link rel="icon" href="{{ $logoUrl }}">
-    @else
-        <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
-    @endif
+    {{-- Signed-out pages show the product; the company name and logo from Settings appear after sign-in. --}}
+    <title>{{ config('app.name') }}</title>
+    <link rel="icon" href="{{ asset('favicon.svg') }}" type="image/svg+xml">
 
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=outfit:400,500,600,700&display=swap" rel="stylesheet" />
@@ -25,8 +22,8 @@
         <div class="flex w-full flex-1 flex-col px-6 py-10 lg:w-1/2">
             <div class="mx-auto flex w-full max-w-md flex-1 flex-col justify-center">
                 <a href="{{ route('login') }}" class="mb-8 flex items-center gap-3 lg:hidden">
-                    <x-application-logo />
-                    <span class="text-xl font-semibold text-gray-800">{{ $companyName }}</span>
+                    <x-application-logo product />
+                    <span class="text-xl font-semibold text-gray-800">{{ config('app.name') }}</span>
                 </a>
 
                 {{ $slot }}
@@ -39,11 +36,11 @@
 
             <div class="relative z-1 flex flex-col items-center px-6">
                 <div class="mb-4 flex items-center gap-3">
-                    <x-application-logo class="size-12" />
-                    <span class="text-3xl font-semibold text-white">{{ $companyName }}</span>
+                    <x-application-logo product class="size-12" />
+                    <span class="text-3xl font-semibold text-white">{{ config('app.name') }}</span>
                 </div>
                 <p class="max-w-xs text-center text-gray-400">
-                    Employees, departments and leave management in one place.
+                    Leave management for small teams.
                 </p>
             </div>
         </div>

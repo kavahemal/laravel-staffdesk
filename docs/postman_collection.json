@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "HRMS API v1",
+    "name": "StaffDesk API v1",
     "description": "Employee leave API (Laravel Sanctum bearer tokens).\n\nRun the requests top to bottom: **Login** stores the token, **Leave types** picks a type with days left, **Apply leave** stores the new leave id, **Cancel leave** cancels it, **Logout** revokes the token.\n\nSet `base_url`, `email` and `password` in the collection variables. Every error is JSON: 401 (no / bad token), 403 (not allowed), 404, 422 (`message` + `errors`), 429 (rate limit).",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },

@@ -23,7 +23,7 @@ class LeaveReportController extends Controller
         $totalDays = (float) $query->clone()->reorder()->sum('days');
 
         return view('reports.leaves', [
-            'leaves' => $query->paginate(config('hrms.per_page'))->withQueryString(),
+            'leaves' => $query->paginate(config('staffdesk.per_page'))->withQueryString(),
             'totalDays' => $totalDays,
             'departments' => Department::forSelect()->get(),
             'leaveTypes' => LeaveType::forSelect()->get(),

@@ -43,7 +43,7 @@ class EmployeeController extends Controller
             ])
             ->defaultSort($byCode)
             ->orderBy('employees.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return view('employees.index', [
@@ -90,7 +90,7 @@ class EmployeeController extends Controller
         return [
             'employee' => $employee,
             'departments' => Department::forSelect()->get(),
-            'roles' => config('hrms.employee_roles'),
+            'roles' => config('staffdesk.employee_roles'),
         ];
     }
 }

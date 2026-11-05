@@ -58,7 +58,7 @@ class User extends Authenticatable
     {
         return [
             'unreadCount' => $this->unreadNotifications()->count(),
-            'notifications' => $this->notifications()->latest()->limit(config('hrms.header_notifications'))->get(),
+            'notifications' => $this->notifications()->latest()->limit(config('staffdesk.header_notifications'))->get(),
         ];
     }
 

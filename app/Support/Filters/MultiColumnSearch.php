@@ -37,7 +37,7 @@ class MultiColumnSearch implements Filter
      */
     private function likePattern(mixed $value): string
     {
-        $term = Str::limit(implode(',', (array) $value), config('hrms.search_max_length'), '');
+        $term = Str::limit(implode(',', (array) $value), config('staffdesk.search_max_length'), '');
 
         return '%'.addcslashes($term, '%_\\').'%';
     }

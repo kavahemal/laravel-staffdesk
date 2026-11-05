@@ -1,6 +1,6 @@
 <x-guest-layout>
     @php
-        $devLogin = app()->isLocal() ? config('hrms.dev_login') : [];
+        $devLogin = app()->isLocal() ? config('staffdesk.dev_login') : [];
     @endphp
 
     <div class="mb-5 sm:mb-8">

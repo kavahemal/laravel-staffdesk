@@ -19,9 +19,9 @@ class UpdateSettingsRequest extends FormRequest
     {
         $rules = [
             'company_name' => ['required', 'string', 'max:50'],
-            'date_format' => ['required', Rule::in(config('hrms.date_formats'))],
+            'date_format' => ['required', Rule::in(config('staffdesk.date_formats'))],
             // No SVG: an SVG served from our own domain can run scripts.
-            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:'.config('hrms.logo_max_kb')],
+            'logo' => ['nullable', 'image', 'mimes:png,jpg,jpeg,webp', 'max:'.config('staffdesk.logo_max_kb')],
             'remove_logo' => ['boolean'],
             'mail_mailer' => ['required', Rule::in(['log', 'smtp'])],
             'mail_host' => ['nullable', 'required_if:mail_mailer,smtp', 'string', 'max:255'],

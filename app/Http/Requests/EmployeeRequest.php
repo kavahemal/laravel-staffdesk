@@ -25,7 +25,7 @@ class EmployeeRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', Rule::unique('users')->ignore($employee?->user_id)],
-            'role' => ['required', Rule::in(config('hrms.employee_roles'))],
+            'role' => ['required', Rule::in(config('staffdesk.employee_roles'))],
             'department_id' => ['required', 'integer', Rule::exists('departments', 'id')->whereNull('deleted_at')],
             'designation' => ['required', 'string', 'max:100'],
             'joining_date' => ['required', 'date'],

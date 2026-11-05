@@ -36,7 +36,7 @@ class DepartmentController extends Controller
             ])
             ->defaultSort($byName)
             ->orderBy('departments.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return view('departments.index', [

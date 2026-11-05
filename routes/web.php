@@ -16,9 +16,8 @@ use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/login');
-Route::get('logo', [SettingController::class, 'logo'])->name('logo');
-
 Route::middleware('auth')->group(function () {
+    Route::get('logo', [SettingController::class, 'logo'])->name('logo');
     Route::get('/dashboard', DashboardController::class)->name('dashboard');
 
     Route::get('notifications/bell', [NotificationController::class, 'bell'])->name('notifications.bell');

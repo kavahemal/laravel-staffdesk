@@ -25,7 +25,7 @@ class SettingController extends Controller
         return view('settings.edit', [
             'companyName' => $settings->companyName(),
             'dateFormat' => $settings->dateFormat(),
-            'dateFormats' => config('hrms.date_formats'),
+            'dateFormats' => config('staffdesk.date_formats'),
             'hasLogo' => $settings->logoPath() !== null,
             'mail' => $settings->mail(),
             'workWeek' => $settings->workWeek(),
@@ -66,7 +66,7 @@ class SettingController extends Controller
             : "Test email sent to {$request->user()->email}.");
     }
 
-    /** The uploaded logo (also the favicon); public, since the login page shows it too. */
+    /** The uploaded company logo (also the favicon) for signed-in pages; the login page shows the StaffDesk mark. */
     public function logo(SettingService $settings): StreamedResponse
     {
         /** @var FilesystemAdapter $disk */

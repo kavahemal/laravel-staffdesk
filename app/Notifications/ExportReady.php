@@ -18,7 +18,7 @@ class ExportReady extends Notification
 
     public function toArray(object $notifiable): array
     {
-        $hours = intdiv(config('hrms.export_link_minutes'), 60);
+        $hours = intdiv(config('staffdesk.export_link_minutes'), 60);
 
         return [
             'report_export_id' => $this->export->id,
@@ -26,7 +26,7 @@ class ExportReady extends Notification
             // Relative, because the bell only redirects to own paths; checked with `signed:relative`.
             'url' => URL::temporarySignedRoute(
                 'reports.exports.download',
-                now()->addMinutes(config('hrms.export_link_minutes')),
+                now()->addMinutes(config('staffdesk.export_link_minutes')),
                 $this->export,
                 absolute: false,
             ),

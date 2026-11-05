@@ -12,7 +12,7 @@
                 <div>
                     <x-input-label for="company_name">Company name<span class="text-error-500">*</span></x-input-label>
                     <x-text-input id="company_name" name="company_name" :value="old('company_name', $companyName)" required maxlength="50" />
-                    <p class="mt-1.5 text-theme-xs text-gray-500">Shown in the sidebar, the login page and the browser tab.</p>
+                    <p class="mt-1.5 text-theme-xs text-gray-500">Shown in the sidebar, header and browser tab after sign-in. The login page shows {{ config('app.name') }}.</p>
                     <x-input-error :messages="$errors->get('company_name')" />
                 </div>
 
@@ -26,7 +26,7 @@
                             'border-error-500 focus:border-error-300 focus:ring-error-500/10' => $errors->has('logo'),
                         ]) @if ($errors->has('logo')) aria-invalid="true" @endif>
                     </div>
-                    <p class="mt-1.5 text-theme-xs text-gray-500">PNG, JPG or WebP up to {{ config('hrms.logo_max_kb') / 1024 }} MB; a square image works best. Also used as the browser tab icon.</p>
+                    <p class="mt-1.5 text-theme-xs text-gray-500">PNG, JPG or WebP up to {{ config('staffdesk.logo_max_kb') / 1024 }} MB; a square image works best. Shown in the sidebar and as the browser tab icon after sign-in.</p>
                     @if ($hasLogo)
                         <label class="mt-2 flex items-center gap-2 text-theme-sm text-gray-700">
                             <input type="checkbox" name="remove_logo" value="1" class="size-4 rounded border-gray-300 text-brand-500" @checked(old('remove_logo'))>

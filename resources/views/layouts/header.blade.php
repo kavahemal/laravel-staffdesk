@@ -29,7 +29,7 @@
                 unread: @js($unreadCount),
                 timer: null,
                 init() {
-                    this.timer = setInterval(() => document.hidden || this.refresh(), @js(config('hrms.notification_poll_seconds') * 1000));
+                    this.timer = setInterval(() => document.hidden || this.refresh(), @js(config('staffdesk.notification_poll_seconds') * 1000));
                 },
                 async refresh() {
                     const response = await fetch(@js(route('notifications.bell')), { headers: { Accept: 'application/json' } }).catch(() => null);

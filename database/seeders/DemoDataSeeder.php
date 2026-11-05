@@ -87,7 +87,7 @@ class DemoDataSeeder extends Seeder
 
         try {
             $this->demoEmployeeLeave($employee);
-            $this->teamLeave($staff->first(), $staff->get(1));
+            $this->teamLeave($manager, $staff->first(), $staff->get(1));
             $this->history(User::whereKeyNot($employee->id)->whereHas('employee')->get());
         } finally {
             Carbon::setTestNow($original);
@@ -126,32 +126,45 @@ class DemoDataSeeder extends Seeder
         $this->leave($employee, 'Casual Leave', $this->workingDay(20), 1, LeaveStatus::Cancelled);
     }
 
-    /** manager@example.com has someone on leave today and requests to decide, one clashing with approved team leave. */
-    private function teamLeave(User $first, User $second): void
+    /**
+     * manager@example.com has someone on leave today and requests to decide, one clashing with approved
+     * team leave – and some own leave (the upcoming one waits for HR).
+     */
+    private function teamLeave(User $manager, User $first, User $second): void
     {
+        $this->leave($manager, 'Casual Leave', $this->workingDay(-18), 1, LeaveStatus::Approved);
+        $this->leave($manager, 'Casual Leave', $this->workingDay(12), 2, LeaveStatus::Pending);
         $this->leave($first, 'Sick Leave', $this->workingDay(-1), 3, LeaveStatus::Approved);
         $this->leave($first, 'Casual Leave', $this->workingDay(7), 2, LeaveStatus::Approved);
         $this->leave($second, 'Casual Leave', $this->workingDay(6), 3, LeaveStatus::Pending);
         $this->leave($second, 'Sick Leave', $this->workingDay(3), 1, LeaveStatus::Pending, HalfDay::Second);
     }
 
-    /** Random requests every few weeks from two months ago to a month ahead; clashes are skipped. */
-    /** @param  Collection<int, User>  $users */
+    /**
+     * A realistic small team: about a third take no leave in the window, the rest one request every
+     * 4–7 weeks (mostly 1–2 days), from two months ago to a month ahead. Clashes are skipped.
+     *
+     * @param  Collection<int, User>  $users
+     */
     private function history(Collection $users): void
     {
         $end = $this->now->copy()->addMonth();
 
         foreach ($users as $user) {
-            $from = $this->workingDay(fake()->numberBetween(-60, -50));
+            if (fake()->boolean(35)) {
+                continue;
+            }
+
+            $from = $this->workingDay(fake()->numberBetween(-60, -20));
 
             while ($from->lt($end)) {
-                $halfDay = fake()->boolean(15) ? fake()->randomElement(HalfDay::cases()) : null;
-                $length = $halfDay ? 1 : fake()->randomElement([1, 1, 2, 2, 3, 4]);
+                $halfDay = fake()->boolean(20) ? fake()->randomElement(HalfDay::cases()) : null;
+                $length = $halfDay ? 1 : fake()->randomElement([1, 1, 1, 2, 2, 3]);
                 $type = fake()->randomElement(['Casual Leave', 'Casual Leave', 'Casual Leave', 'Sick Leave', 'Sick Leave', 'Unpaid Leave']);
 
                 $this->leave($user, $type, $from, $length, $this->randomStatus($from, $length), $halfDay);
 
-                $from = $this->nextWorkingDay($from->copy()->addDays($length + fake()->numberBetween(10, 25)));
+                $from = $this->nextWorkingDay($from->copy()->addDays($length + fake()->numberBetween(28, 50)));
             }
         }
     }

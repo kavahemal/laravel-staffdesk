@@ -131,9 +131,10 @@ test('the download link works only for its owner, unchanged and before it expire
 
     actingAs(userWithRole('Admin'))->get($url)->assertForbidden();
     actingAs($hr)->get(route('reports.exports.download', $export))->assertForbidden();
-    actingAs($hr)->get(preg_replace('/signature=\w/', 'signature=0', $url))->assertForbidden();
+    // Replace the whole signature: changing one hex digit to "0" is a no-op 1 time in 16.
+    actingAs($hr)->get(preg_replace('/signature=\w+/', 'signature=tampered', $url))->assertForbidden();
 
-    travel(config('hrms.export_link_minutes') + 1)->minutes();
+    travel(config('staffdesk.export_link_minutes') + 1)->minutes();
     actingAs($hr)->get($url)->assertForbidden();
 });
 

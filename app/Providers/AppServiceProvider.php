@@ -36,7 +36,7 @@ class AppServiceProvider extends ServiceProvider
         Model::preventLazyLoading(! app()->isProduction());
 
         View::composer('layouts.header', fn ($view) => $view->with(request()->user()->notificationBell()));
-        View::composer(['layouts.app', 'layouts.guest', 'layouts.header', 'layouts.sidebar'], fn ($view) => $view->with([
+        View::composer(['layouts.app', 'layouts.header', 'layouts.sidebar'], fn ($view) => $view->with([
             'companyName' => app(SettingService::class)->companyName(),
             'logoUrl' => app(SettingService::class)->logoUrl(),
         ]));
@@ -44,11 +44,11 @@ class AppServiceProvider extends ServiceProvider
         // Deactivating deletes tokens too; this also covers a user switched off directly in the database.
         Sanctum::authenticateAccessTokensUsing(fn (PersonalAccessToken $token, bool $isValid) => $isValid && $token->tokenable?->is_active);
 
-        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(config('hrms.api_rate_limit'))
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(config('staffdesk.api_rate_limit'))
             ->by($request->user()?->id ?: $request->ip()));
 
         // Per email + IP, so one attacker can't lock out an account from everywhere.
-        RateLimiter::for('api-login', fn (Request $request) => Limit::perMinute(config('hrms.api_login_rate_limit'))
+        RateLimiter::for('api-login', fn (Request $request) => Limit::perMinute(config('staffdesk.api_login_rate_limit'))
             ->by(Str::lower((string) $request->input('email')).'|'.$request->ip()));
     }
 }

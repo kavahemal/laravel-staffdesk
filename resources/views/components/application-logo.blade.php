@@ -1,6 +1,11 @@
-{{-- The logo uploaded on the Settings page, or the default HRMS mark (brand square with a "people" glyph). --}}
+{{--
+    The company logo uploaded on the Settings page, or the default StaffDesk mark (brand square with a "people" glyph).
+    `product` = always the StaffDesk mark (signed-out pages).
+--}}
+@props(['product' => false])
+
 @php
-    $logoUrl = app(\App\Services\SettingService::class)->logoUrl();
+    $logoUrl = $product ? null : app(\App\Services\SettingService::class)->logoUrl();
 @endphp
 
 @if ($logoUrl)

@@ -14,7 +14,7 @@ test('the home page redirects to login, which can be rendered', function () {
 });
 
 test('login form is prefilled from env only in the local environment', function () {
-    config(['hrms.dev_login' => ['email' => 'dev@example.com', 'password' => 'dev-secret']]);
+    config(['staffdesk.dev_login' => ['email' => 'dev@example.com', 'password' => 'dev-secret']]);
 
     get('/login')->assertDontSee('dev@example.com')->assertDontSee('dev-secret');
 

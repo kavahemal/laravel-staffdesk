@@ -63,7 +63,7 @@ test('an employee sees their balance and latest requests, no approver numbers', 
     actingAs($employee)->get(route('dashboard'))
         ->assertViewHas('approver', null)
         ->assertSeeInOrder(['Casual Leave', '7', 'of 10 days left'])
-        ->assertViewHas('own', fn (array $own) => $own['recent']->count() === config('hrms.dashboard_recent_leaves')
+        ->assertViewHas('own', fn (array $own) => $own['recent']->count() === config('staffdesk.dashboard_recent_leaves')
             && $own['recent']->first()->from_date->toDateString() === '2026-12-06')
         ->assertDontSeeText('Pending approvals');
 });

@@ -30,7 +30,7 @@ class LeaveController extends Controller
             ])
             ->orderByDesc('from_date')
             ->orderByDesc('leave_requests.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return LeaveResource::collection($leaves);

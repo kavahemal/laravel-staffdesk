@@ -26,10 +26,10 @@ class SettingService
     /** @var array<string, mixed> values already read in this request */
     private array $loaded = [];
 
-    /** The saved work week, or the default from `config/hrms.php`. */
+    /** The saved work week, or the default from `config/staffdesk.php`. */
     public function workWeek(): WorkWeek
     {
-        return WorkWeek::fromArray($this->get(self::WORK_WEEK) ?? config('hrms.work_week'));
+        return WorkWeek::fromArray($this->get(self::WORK_WEEK) ?? config('staffdesk.work_week'));
     }
 
     /** Shown in the sidebar, header, login page and browser tab; defaults to APP_NAME. */
@@ -43,7 +43,7 @@ class SettingService
     {
         $format = $this->get(self::DATE_FORMAT);
 
-        return in_array($format, config('hrms.date_formats'), true) ? $format : config('hrms.date_format');
+        return in_array($format, config('staffdesk.date_formats'), true) ? $format : config('staffdesk.date_format');
     }
 
     /** File name on the `branding` disk; null = the default logo and favicon. */

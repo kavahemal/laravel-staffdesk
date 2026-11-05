@@ -71,12 +71,12 @@ class EmployeeService
     /** Next code after the highest one ever issued (deleted profiles included), e.g. EMP-0007. */
     private function nextCode(): string
     {
-        $prefix = config('hrms.employee_code_prefix');
+        $prefix = config('staffdesk.employee_code_prefix');
 
         $highest = Employee::withTrashed()->lockForUpdate()->pluck('employee_code')
             ->map(fn (string $code) => (int) Str::after($code, $prefix))
             ->max() ?? 0;
 
-        return $prefix.str_pad((string) ($highest + 1), config('hrms.employee_code_digits'), '0', STR_PAD_LEFT);
+        return $prefix.str_pad((string) ($highest + 1), config('staffdesk.employee_code_digits'), '0', STR_PAD_LEFT);
     }
 }

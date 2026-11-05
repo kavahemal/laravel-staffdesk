@@ -25,7 +25,7 @@ test('login returns a bearer token that opens the API', function () {
         ->assertOk()
         ->assertJsonPath('token_type', 'Bearer')
         ->assertJsonPath('user.id', $user->id)
-        ->assertJsonPath('expires_at', now()->addDays(config('hrms.api_token_days'))->toIso8601String())
+        ->assertJsonPath('expires_at', now()->addDays(config('staffdesk.api_token_days'))->toIso8601String())
         ->json('token');
 
     expect($user->tokens()->sole()->name)->toBe('Pixel');
@@ -47,7 +47,7 @@ test('wrong password and inactive accounts get the same 422', function (array $a
 ]);
 
 test('login attempts are rate limited', function () {
-    foreach (range(1, config('hrms.api_login_rate_limit')) as $attempt) {
+    foreach (range(1, config('staffdesk.api_login_rate_limit')) as $attempt) {
         postJson(route('api.v1.login'), ['email' => 'sam@example.com', 'password' => 'wrong'])->assertUnprocessable();
     }
 

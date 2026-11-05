@@ -30,7 +30,7 @@ class LeaveTypeController extends Controller
             ])
             ->defaultSort($byName)
             ->orderBy('leave_types.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return view('leave-types.index', [

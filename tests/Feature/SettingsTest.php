@@ -7,7 +7,6 @@ use App\Services\SettingService;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
@@ -20,7 +19,7 @@ use function Pest\Laravel\travelTo;
 function workWeekInput(array $changes = [], array $general = []): array
 {
     return [
-        'company_name' => 'HRMS',
+        'company_name' => 'StaffDesk',
         'date_format' => 'd M Y',
         'mail_mailer' => 'log',
         'mail_from_address' => 'hr@example.com',
@@ -58,7 +57,7 @@ test('company name and date format are used across the app', function () {
     $admin = userWithRole('Admin');
 
     actingAs($admin)->get(route('settings.edit'))
-        ->assertSee('value="HRMS"', false)
+        ->assertSee('value="'.config('app.name').'"', false)
         ->assertSee('<option value="d M Y" selected>05 Nov 2026</option>', false);
 
     actingAs($admin)->put(route('settings.update'), workWeekInput(general: ['company_name' => 'Acme Corp', 'date_format' => 'd/m/Y']))
@@ -70,10 +69,9 @@ test('company name and date format are used across the app', function () {
         ->assertSee('<title>Settings | Acme Corp</title>', false)
         ->assertSee('<option value="d/m/Y" selected>05/11/2026</option>', false);
 
-    actingAs(userWithRole('HR'))->get(route('leaves.record'))->assertSee('data-display-format="d/m/Y"', false);
-
-    Auth::logout();
-    get(route('login'))->assertSeeText('Acme Corp');
+    actingAs(userWithRole('HR'))->get(route('leaves.record'))
+        ->assertSee('data-display-format="d/m/Y"', false)
+        ->assertSeeText('Acme Corp');
 });
 
 test('an uploaded logo replaces the default logo and favicon, and can be removed again', function () {
@@ -102,13 +100,18 @@ test('an uploaded logo replaces the default logo and favicon, and can be removed
     actingAs($admin)->get(route('dashboard'))->assertSee('favicon.svg');
 });
 
-test('the login page shows the logo to guests', function () {
+test('signed-out pages show the product, not the company logo or name', function () {
     Storage::fake('branding');
-    app(SettingService::class)->saveLogo(UploadedFile::fake()->image('logo.png', 64, 64));
-    $logoUrl = app(SettingService::class)->logoUrl();
+    $settings = app(SettingService::class);
+    $settings->saveGeneral('Acme Corp', 'd M Y');
+    $settings->saveLogo(UploadedFile::fake()->image('logo.png', 64, 64));
 
-    get(route('login'))->assertSee('<img src="'.$logoUrl.'"', false);
-    get($logoUrl)->assertOk();
+    get(route('login'))
+        ->assertSee('<title>'.config('app.name').'</title>', false)
+        ->assertSee('favicon.svg')
+        ->assertDontSee($settings->logoUrl())
+        ->assertDontSeeText('Acme Corp');
+    get($settings->logoUrl())->assertRedirect(route('login'));
 });
 
 test('work week input is validated', function (array $input, string $field) {
@@ -149,7 +152,7 @@ function smtpInput(array $changes = []): array
         'mail_host' => 'smtp.example.com',
         'mail_port' => '587',
         'mail_scheme' => 'smtp',
-        'mail_username' => 'hrms',
+        'mail_username' => 'staffdesk',
         'mail_password' => 'secret-pass',
         'mail_from_address' => 'hr@example.com',
         'mail_from_name' => '',
@@ -186,7 +189,7 @@ test('saved email settings are used when mail is sent; without them .env applies
 
     $settings->saveGeneral('Acme Corp', 'd M Y');
     $settings->saveMail(['mailer' => 'smtp', 'host' => 'smtp.example.com', 'port' => 465, 'scheme' => 'smtps',
-        'username' => 'hrms', 'password' => 'secret-pass', 'from_address' => 'hr@example.com', 'from_name' => null]);
+        'username' => 'staffdesk', 'password' => 'secret-pass', 'from_address' => 'hr@example.com', 'from_name' => null]);
     app()->forgetInstance('mail.manager');
     app('mail.manager');
 

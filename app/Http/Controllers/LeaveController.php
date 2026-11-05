@@ -42,7 +42,7 @@ class LeaveController extends Controller
             ->allowedSorts([$byFrom, ...LeaveSorts::columns()])
             ->defaultSort($byFrom)
             ->orderByDesc('leave_requests.id')
-            ->paginate(config('hrms.per_page'))
+            ->paginate(config('staffdesk.per_page'))
             ->withQueryString();
 
         return view('leaves.index', [

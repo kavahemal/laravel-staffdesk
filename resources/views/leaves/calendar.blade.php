@@ -5,7 +5,7 @@
         $link = fn (string $month) => route('leaves.calendar', array_filter(['month' => $month, 'department' => $department]));
         $isCurrentMonth = $month->isSameMonth(now());
         $hasLeave = collect($weeks)->flatten(1)->contains(fn (array $day) => $day['inMonth'] && $day['leaves']->isNotEmpty());
-        $perDay = config('hrms.calendar_names_per_day');
+        $perDay = config('staffdesk.calendar_names_per_day');
     @endphp
 
     <div class="overflow-hidden rounded-2xl border border-gray-200 bg-white" x-data="{ show: false, day: null, days: @js($details) }" @keydown.escape.window="show = false">
@@ -56,7 +56,7 @@
                                 'bg-gray-50' => $off || ! $day['inMonth'],
                             ])>
                                 @if ($count)
-                                    <button type="button" @click="day = @js($day['date']->toDateString()); show = true" title="See who is off" class="block h-full w-full p-2 text-left transition hover:bg-gray-50">
+                                    <button type="button" @click="day = @js($day['date']->toDateString()); show = true" title="See who is off" class="flex h-full w-full flex-col justify-start p-2 text-left transition hover:bg-gray-50">
                                 @else
                                     <div class="p-2">
                                 @endif
