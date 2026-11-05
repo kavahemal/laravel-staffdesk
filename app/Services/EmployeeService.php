@@ -55,6 +55,8 @@ class EmployeeService
             $employee->user->forceFill(['is_active' => $active])->save();
 
             if (! $active) {
+                // Signs the user out of the API on every device.
+                $employee->user->tokens()->delete();
                 $this->releaseDepartments($employee->user);
             }
         });

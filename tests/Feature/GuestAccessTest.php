@@ -4,6 +4,7 @@ use App\Models\Department;
 use App\Models\Employee;
 use App\Models\LeaveRequest;
 use App\Models\LeaveType;
+use App\Models\ReportExport;
 use Illuminate\Support\Str;
 
 use function Pest\Laravel\call;
@@ -14,6 +15,7 @@ test('guests are sent to the login page from every app page', function (string $
         'employee' => Employee::factory()->create(),
         'leave_type' => LeaveType::factory()->create(),
         'leave' => LeaveRequest::factory()->create(),
+        'export' => ReportExport::factory()->create(),
         'notification' => (string) Str::uuid(),
         default => null,
     };
@@ -50,6 +52,10 @@ test('guests are sent to the login page from every app page', function (string $
     ['GET', 'approvals.index', null],
     ['PATCH', 'leaves.approve', 'leave'],
     ['PATCH', 'leaves.reject', 'leave'],
+    ['GET', 'reports.leaves', null],
+    ['POST', 'reports.leaves.export', null],
+    ['GET', 'reports.exports.download', 'export'],
+    ['GET', 'notifications.bell', null],
     ['POST', 'notifications.read', 'notification'],
     ['POST', 'notifications.read-all', null],
     ['GET', 'settings.edit', null],

@@ -27,48 +27,40 @@
         </div>
 
         <div class="flex items-center gap-3">
-            <x-dropdown align="right" width="w-80 sm:w-96" contentClasses="p-0">
-                <x-slot name="trigger">
-                    <button type="button" title="Notifications" class="relative flex size-11 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
-                        <x-heroicon-o-bell class="size-5" />
-                        @if ($unreadCount > 0)
-                            <span class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-error-500 px-1 text-theme-xs font-medium text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
-                        @endif
-                    </button>
-                </x-slot>
+            {{-- Asks for new notifications every few seconds while the tab is visible; stops once the session is gone. --}}
+            <div x-data="{
+                    unread: @js($unreadCount),
+                    timer: null,
+                    init() {
+                        this.timer = setInterval(() => document.hidden || this.refresh(), @js(config('hrms.notification_poll_seconds') * 1000));
+                    },
+                    async refresh() {
+                        const response = await fetch(@js(route('notifications.bell')), { headers: { Accept: 'application/json' } }).catch(() => null);
+                        if (! response) return;
+                        if (! response.ok || response.redirected) return clearInterval(this.timer);
 
-                <x-slot name="content">
-                    <div class="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-                        <h5 class="text-base font-semibold text-gray-800">Notifications</h5>
-                        @if ($unreadCount > 0)
-                            <form method="POST" action="{{ route('notifications.read-all') }}">
-                                @csrf
-                                <button type="submit" class="text-theme-xs font-medium text-brand-500 hover:text-brand-600">Mark all as read</button>
-                            </form>
-                        @endif
-                    </div>
+                        const { unread, html } = await response.json();
+                        if (unread > this.unread) toast('success', 'You have a new notification.');
+                        this.unread = unread;
+                        this.$el.querySelector('[data-notification-list]').innerHTML = html;
+                    },
+                }" @visibilitychange.document="document.hidden || refresh()">
+                <x-dropdown align="right" width="w-80 sm:w-96" contentClasses="p-0">
+                    <x-slot name="trigger">
+                        <button type="button" title="Notifications" class="relative flex size-11 items-center justify-center rounded-full border border-gray-200 text-gray-500 hover:bg-gray-100 hover:text-gray-700">
+                            <x-heroicon-o-bell class="size-5" />
+                            <span x-show="unread > 0" x-text="unread > 9 ? '9+' : unread" @style(['display: none' => $unreadCount === 0])
+                                  class="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-error-500 px-1 text-theme-xs font-medium text-white">{{ $unreadCount > 9 ? '9+' : $unreadCount }}</span>
+                        </button>
+                    </x-slot>
 
-                    <div class="max-h-96 overflow-y-auto">
-                        @forelse ($notifications as $notification)
-                            <form method="POST" action="{{ route('notifications.read', $notification->id) }}">
-                                @csrf
-                                <button type="submit" @class([
-                                    'flex w-full items-start gap-3 border-b border-gray-100 px-4 py-3 text-start last:border-b-0 hover:bg-gray-50',
-                                    'bg-brand-50/40' => $notification->unread(),
-                                ])>
-                                    <span @class(['mt-1.5 size-2 shrink-0 rounded-full', 'bg-brand-500' => $notification->unread(), 'bg-transparent' => $notification->read()])></span>
-                                    <span class="flex-1">
-                                        <span @class(['block text-sm', 'text-gray-800' => $notification->unread(), 'text-gray-500' => $notification->read()])>{{ $notification->data['message'] ?? '' }}</span>
-                                        <span class="mt-1 block text-theme-xs text-gray-400">{{ $notification->created_at->diffForHumans() }}</span>
-                                    </span>
-                                </button>
-                            </form>
-                        @empty
-                            <p class="px-4 py-8 text-center text-sm text-gray-500">No notifications yet.</p>
-                        @endforelse
-                    </div>
-                </x-slot>
-            </x-dropdown>
+                    <x-slot name="content">
+                        <div data-notification-list>
+                            @include('layouts.notifications')
+                        </div>
+                    </x-slot>
+                </x-dropdown>
+            </div>
 
             <x-dropdown align="right" width="w-65">
                 <x-slot name="trigger">

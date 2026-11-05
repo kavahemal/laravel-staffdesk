@@ -109,6 +109,24 @@ class LeaveRequest extends Model
         $query->where('from_date', '<=', $to)->where('to_date', '>=', $from);
     }
 
+    /** Leave still running on or after this day (pass a start-of-day date). */
+    public function scopeEndingFrom(Builder $query, CarbonInterface $date): void
+    {
+        $query->where('to_date', '>=', $date);
+    }
+
+    /** Leave that has started by this day (pass a start-of-day date). */
+    public function scopeStartingBy(Builder $query, CarbonInterface $date): void
+    {
+        $query->where('from_date', '<=', $date);
+    }
+
+    /** Leave of employees who currently work in the department. */
+    public function scopeInDepartment(Builder $query, int $departmentId): void
+    {
+        $query->whereHas('user.employee', fn (Builder $employee) => $employee->where('department_id', $departmentId));
+    }
+
     /** Leave never spans two years, so the start date decides the year. */
     public function scopeInYear(Builder $query, int $year): void
     {

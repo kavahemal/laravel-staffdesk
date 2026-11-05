@@ -30,6 +30,14 @@ return [
 
     'disks' => [
 
+        // Leave report CSVs, written by a queued job; downloaded only through a signed link.
+        'exports' => [
+            'driver' => 'local',
+            'root' => storage_path('app/exports'),
+            'throw' => true,
+            'report' => false,
+        ],
+
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),

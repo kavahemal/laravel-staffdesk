@@ -45,6 +45,24 @@ return [
     'header_notifications' => 8,
 
     /*
+    | How often an open page asks for new notifications, in seconds (paused while the tab is hidden).
+    */
+    'notification_poll_seconds' => 30,
+
+    /*
+    | How long the download link in an "export ready" notification works, in minutes.
+    */
+    'export_link_minutes' => 60 * 24,
+
+    /*
+    | API: days an access token from /api/v1/login works, and requests per minute
+    | (per user for the API, per email + IP for login attempts).
+    */
+    'api_token_days' => 30,
+    'api_rate_limit' => 60,
+    'api_login_rate_limit' => 5,
+
+    /*
     | Display format for dates in views and exports (PHP date format).
     */
     'date_format' => 'd M Y',

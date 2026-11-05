@@ -1,0 +1,201 @@
+{
+  "info": {
+    "name": "HRMS API v1",
+    "description": "Employee leave API (Laravel Sanctum bearer tokens).\n\nRun the requests top to bottom: **Login** stores the token, **Leave types** picks a type with days left, **Apply leave** stores the new leave id, **Cancel leave** cancels it, **Logout** revokes the token.\n\nSet `base_url`, `email` and `password` in the collection variables. Every error is JSON: 401 (no / bad token), 403 (not allowed), 404, 422 (`message` + `errors`), 429 (rate limit).",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [{ "key": "token", "value": "{{token}}", "type": "string" }]
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:8000" },
+    { "key": "email", "value": "employee@example.com" },
+    { "key": "password", "value": "password" },
+    { "key": "token", "value": "" },
+    { "key": "leave_type_id", "value": "" },
+    { "key": "from_date", "value": "" },
+    { "key": "leave_id", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 with a bearer token', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.token_type).to.eql('Bearer');",
+              "    pm.collectionVariables.set('token', body.token);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"email\": \"{{email}}\",\n    \"password\": \"{{password}}\",\n    \"device_name\": \"Postman\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/v1/login",
+        "description": "Email + password → token (valid for 30 days). Inactive accounts get the same 422 as a wrong password. 5 attempts per minute per email + IP."
+      }
+    },
+    {
+      "name": "Leave types",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 with this year\\'s balance per type', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const type = pm.response.json().data.find(t => t.remaining === null || t.remaining >= 1);",
+              "    pm.expect(type, 'a leave type with at least 1 day left').to.be.an('object');",
+              "    pm.collectionVariables.set('leave_type_id', type.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/leave-types",
+        "description": "Active leave types with yearly quota, used and remaining days (`null` = unlimited)."
+      }
+    },
+    {
+      "name": "Apply leave",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// A future working day: two weeks ahead, skipping Sunday (off in the default work week).",
+              "const day = new Date();",
+              "day.setDate(day.getDate() + 14);",
+              "if (day.getDay() === 0) day.setDate(day.getDate() + 1);",
+              "pm.collectionVariables.set('from_date', day.toISOString().slice(0, 10));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('201 with a pending leave', () => {",
+              "    pm.response.to.have.status(201);",
+              "    const leave = pm.response.json().data;",
+              "    pm.expect(leave.status).to.eql('pending');",
+              "    pm.collectionVariables.set('leave_id', leave.id);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"leave_type_id\": {{leave_type_id}},\n    \"from_date\": \"{{from_date}}\",\n    \"to_date\": \"{{from_date}}\",\n    \"reason\": \"Applied from Postman\"\n}",
+          "options": { "raw": { "language": "json" } }
+        },
+        "url": "{{base_url}}/api/v1/leaves",
+        "description": "Same rules as the web form: no past dates, `to_date >= from_date`, same year, no overlap, within balance. For a half day send `\"half_day\": \"first\"` or `\"second\"` (`to_date` is then ignored). Rule errors come back as 422."
+      }
+    },
+    {
+      "name": "My leaves",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200, paginated, includes the new leave', () => {",
+              "    pm.response.to.have.status(200);",
+              "    const body = pm.response.json();",
+              "    pm.expect(body.meta.total).to.be.at.least(1);",
+              "    pm.expect(body.data.map(l => l.id)).to.include(Number(pm.collectionVariables.get('leave_id')));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": {
+          "raw": "{{base_url}}/api/v1/leaves?filter[status]=pending",
+          "host": ["{{base_url}}"],
+          "path": ["api", "v1", "leaves"],
+          "query": [
+            { "key": "filter[status]", "value": "pending", "description": "pending | approved | rejected | cancelled" },
+            { "key": "filter[type]", "value": "", "description": "leave type id", "disabled": true },
+            { "key": "page", "value": "2", "disabled": true }
+          ]
+        },
+        "description": "Own leave, latest start date first, 15 per page (`data`, `links`, `meta`)."
+      }
+    },
+    {
+      "name": "Cancel leave",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('200 and cancelled', () => {",
+              "    pm.response.to.have.status(200);",
+              "    pm.expect(pm.response.json().data.status).to.eql('cancelled');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/leaves/{{leave_id}}/cancel",
+        "description": "Own pending leave only – someone else's or a decided leave gives 403."
+      }
+    },
+    {
+      "name": "Logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('204, token revoked', () => {",
+              "    pm.response.to.have.status(204);",
+              "    pm.collectionVariables.set('token', '');",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Accept", "value": "application/json" }],
+        "url": "{{base_url}}/api/v1/logout",
+        "description": "Revokes the token used for this request; other devices stay signed in."
+      }
+    }
+  ]
+}

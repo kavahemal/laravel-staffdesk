@@ -9,12 +9,13 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, HasRoles, Notifiable;
+    use HasApiTokens, HasFactory, HasRoles, Notifiable;
 
     /**
      * The attributes that are mass assignable.
@@ -52,6 +53,15 @@ class User extends Authenticatable
     }
 
     /** Employee profile – every user except the Admin system account has one. */
+    /** Header bell data: unread count + the latest few notifications (page load and polling). */
+    public function notificationBell(): array
+    {
+        return [
+            'unreadCount' => $this->unreadNotifications()->count(),
+            'notifications' => $this->notifications()->latest()->limit(config('hrms.header_notifications'))->get(),
+        ];
+    }
+
     public function employee(): HasOne
     {
         return $this->hasOne(Employee::class);

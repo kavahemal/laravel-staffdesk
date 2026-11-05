@@ -4,7 +4,7 @@
 --}}
 @props(['action', 'filtered' => false, 'button' => 'Filter'])
 
-<form method="GET" action="{{ $action }}" class="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:items-center sm:px-6">
+<form method="GET" action="{{ $action }}" class="flex flex-col gap-3 border-b border-gray-100 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:px-6">
     @if (request()->filled('sort'))
         <input type="hidden" name="sort" value="{{ request('sort') }}">
     @endif

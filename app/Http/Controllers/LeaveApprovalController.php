@@ -38,9 +38,7 @@ class LeaveApprovalController extends Controller
                 // An empty value would fall back to the default, so "All" is an explicit value.
                 AllowedFilter::callback('status', fn (Builder $query, $value) => $value === 'all' ? $query : $query->where('status', $value))
                     ->default(LeaveStatus::Pending->value),
-                AllowedFilter::callback('department', fn (Builder $query, $value) => $query->whereHas(
-                    'user.employee', fn (Builder $employee) => $employee->where('department_id', $value)
-                )),
+                AllowedFilter::callback('department', fn (Builder $query, $value) => $query->inDepartment((int) $value)),
                 AllowedFilter::exact('type', 'leave_type_id'),
             ])
             ->allowedSorts([

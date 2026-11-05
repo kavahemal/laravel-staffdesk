@@ -13,8 +13,8 @@ test('each role sees exactly its menu items', function (string $role, array $vis
             : $response->assertDontSee(route($item['route']));
     }
 })->with([
-    'Admin' => ['Admin', ['Dashboard', 'Leave requests', 'Departments', 'Employees', 'Leave types', 'Settings']],
-    'HR' => ['HR', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests', 'Employees']],
+    'Admin' => ['Admin', ['Dashboard', 'Leave requests', 'Leave report', 'Departments', 'Employees', 'Leave types', 'Settings']],
+    'HR' => ['HR', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests', 'Leave report', 'Employees']],
     'Manager' => ['Manager', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests']],
     'Employee' => ['Employee', ['Dashboard', 'My leaves', 'Leave balance']],
 ]);

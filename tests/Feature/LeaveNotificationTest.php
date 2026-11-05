@@ -90,6 +90,18 @@ test('the bell shows the unread count and the latest messages', function () {
     actingAs($people['support employee'])->get(route('dashboard'))->assertSeeText('No notifications yet.');
 });
 
+test('the header polls the bell: own unread count and the refreshed list', function () {
+    $people = approvalPeople();
+    applyFor($people['sales employee']);
+
+    $response = actingAs($people['manager'])->getJson(route('notifications.bell'))->assertOk()->assertJson(['unread' => 1]);
+    expect($response->json('html'))->toContain("{$people['sales employee']->name} applied for Casual Leave")
+        ->toContain('Mark all as read');
+
+    $response = actingAs($people['support employee'])->getJson(route('notifications.bell'))->assertJson(['unread' => 0]);
+    expect($response->json('html'))->toContain('No notifications yet.')->not->toContain('Mark all as read');
+});
+
 test('opening a notification marks it read and goes to its page', function () {
     $people = approvalPeople();
     applyFor($people['sales employee']);

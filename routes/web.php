@@ -5,6 +5,8 @@ use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeStatusController;
 use App\Http\Controllers\LeaveApprovalController;
 use App\Http\Controllers\LeaveController;
+use App\Http\Controllers\LeaveExportController;
+use App\Http\Controllers\LeaveReportController;
 use App\Http\Controllers\LeaveTypeController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\ProfileController;
@@ -16,6 +18,7 @@ Route::redirect('/', '/login');
 Route::middleware('auth')->group(function () {
     Route::view('/dashboard', 'dashboard')->name('dashboard');
 
+    Route::get('notifications/bell', [NotificationController::class, 'bell'])->name('notifications.bell');
     Route::post('notifications/read-all', [NotificationController::class, 'readAll'])->name('notifications.read-all');
     Route::post('notifications/{notification}/read', [NotificationController::class, 'read'])->name('notifications.read');
 
@@ -36,6 +39,11 @@ Route::middleware('auth')->group(function () {
     Route::get('approvals', [LeaveApprovalController::class, 'index'])->name('approvals.index');
     Route::patch('leaves/{leave}/approve', [LeaveApprovalController::class, 'approve'])->name('leaves.approve');
     Route::patch('leaves/{leave}/reject', [LeaveApprovalController::class, 'reject'])->name('leaves.reject');
+
+    Route::get('reports/leaves', [LeaveReportController::class, 'index'])->name('reports.leaves');
+    Route::post('reports/leaves/export', [LeaveExportController::class, 'store'])->name('reports.leaves.export');
+    Route::get('reports/exports/{export}/download', [LeaveExportController::class, 'download'])
+        ->middleware('signed:relative')->name('reports.exports.download');
 
     Route::get('settings', [SettingController::class, 'edit'])->name('settings.edit');
     Route::put('settings', [SettingController::class, 'update'])->name('settings.update');

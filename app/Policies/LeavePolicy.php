@@ -36,6 +36,12 @@ class LeavePolicy
         return $user->canAny(['leaves.approve-any', 'leaves.approve-team']);
     }
 
+    /** Leave report with CSV export: everyone's leave, any status. */
+    public function viewReport(User $user): bool
+    {
+        return $user->can('reports.view');
+    }
+
     /** Approve or reject: HR/Admin for anyone, a manager for their own department – never one's own leave. */
     public function approve(User $user, LeaveRequest $leave): bool
     {

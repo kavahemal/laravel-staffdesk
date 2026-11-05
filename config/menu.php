@@ -36,6 +36,13 @@ return [
         'permission' => ['leaves.approve-any', 'leaves.approve-team'],
     ],
     [
+        'title' => 'Leave report',
+        'route' => 'reports.leaves',
+        'active' => 'reports.*',
+        'icon' => 'document-chart-bar',
+        'permission' => 'reports.view',
+    ],
+    [
         'title' => 'Departments',
         'route' => 'departments.index',
         'active' => 'departments.*',
