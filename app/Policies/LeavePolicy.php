@@ -37,6 +37,12 @@ class LeavePolicy
         return $user->canAny(['leaves.approve-any', 'leaves.approve-team']);
     }
 
+    /** "Leave calendar": who is off when – every role; which leave shows is LeaveRequest::onCalendarOf(). */
+    public function viewCalendar(User $user): bool
+    {
+        return $user->canAny(['leaves.apply', 'leaves.approve-any', 'leaves.approve-team']);
+    }
+
     /** Leave report with CSV export: everyone's leave, any status. */
     public function viewReport(User $user): bool
     {

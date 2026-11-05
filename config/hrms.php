@@ -40,6 +40,11 @@ return [
     'dashboard_recent_leaves' => 5,
 
     /*
+    | Names shown per day on the Leave calendar before "+N more".
+    */
+    'calendar_names_per_day' => 3,
+
+    /*
     | List search boxes: longer input is cut to this many characters.
     */
     'search_max_length' => 100,

@@ -5,6 +5,7 @@ use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\EmployeeController;
 use App\Http\Controllers\EmployeeStatusController;
 use App\Http\Controllers\LeaveApprovalController;
+use App\Http\Controllers\LeaveCalendarController;
 use App\Http\Controllers\LeaveController;
 use App\Http\Controllers\LeaveExportController;
 use App\Http\Controllers\LeaveReportController;
@@ -33,6 +34,7 @@ Route::middleware('auth')->group(function () {
     Route::resource('leave-types', LeaveTypeController::class)->except('show');
 
     Route::get('leaves/balance', [LeaveController::class, 'balance'])->name('leaves.balance');
+    Route::get('leaves/calendar', LeaveCalendarController::class)->name('leaves.calendar');
     Route::get('leaves/record', [LeaveController::class, 'record'])->name('leaves.record');
     Route::post('leaves/record', [LeaveController::class, 'storeRecord'])->name('leaves.record.store');
     Route::resource('leaves', LeaveController::class)->only(['index', 'create', 'store']);

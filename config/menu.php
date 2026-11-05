@@ -17,6 +17,14 @@ return [
         'permission' => null,
     ],
     [
+        'group' => 'Menu',
+        'title' => 'Leave calendar',
+        'route' => 'leaves.calendar',
+        'active' => 'leaves.calendar',
+        'icon' => 'calendar',
+        'permission' => ['leaves.apply', 'leaves.approve-any', 'leaves.approve-team'],
+    ],
+    [
         'group' => 'My leave',
         'title' => 'My leaves',
         'route' => 'leaves.index',

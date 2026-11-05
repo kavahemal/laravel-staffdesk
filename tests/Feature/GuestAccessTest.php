@@ -44,6 +44,7 @@ test('guests are sent to the login page from every app page', function (string $
     ['DELETE', 'leave-types.destroy', 'leave_type'],
     ['GET', 'leaves.index', null],
     ['GET', 'leaves.balance', null],
+    ['GET', 'leaves.calendar', null],
     ['GET', 'leaves.record', null],
     ['POST', 'leaves.record.store', null],
     ['GET', 'leaves.create', null],

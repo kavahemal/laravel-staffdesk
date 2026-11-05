@@ -110,6 +110,24 @@ class LeaveRequest extends Model
         $query->whereRaw('1 = 0');
     }
 
+    /**
+     * Leave on the user's "Leave calendar": everyone's for approve-any (HR/Admin); otherwise their own
+     * department plus the departments they manage. Nobody else (e.g. no employee profile) sees any.
+     */
+    public function scopeOnCalendarOf(Builder $query, User $user): void
+    {
+        if ($user->can('leaves.approve-any')) {
+            return;
+        }
+
+        $departmentIds = $user->managedDepartments()->pluck('id')
+            ->push($user->employee()->value('department_id'))
+            ->filter()
+            ->unique();
+
+        $query->whereHas('user.employee', fn (Builder $employee) => $employee->whereIn('department_id', $departmentIds));
+    }
+
     /** Shares at least one day with the from-to range (pass start-of-day dates). */
     public function scopeOverlapping(Builder $query, CarbonInterface $from, CarbonInterface $to): void
     {

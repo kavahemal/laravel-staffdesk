@@ -8,15 +8,16 @@ test('each role sees exactly its menu items', function (string $role, array $vis
     $response = actingAs(userWithRole($role))->get(route('dashboard'));
 
     foreach (config('menu') as $item) {
+        // Whole href: /leaves is also the start of /leaves/calendar.
         in_array($item['title'], $visible, true)
-            ? $response->assertSee(route($item['route']))
-            : $response->assertDontSee(route($item['route']));
+            ? $response->assertSee('href="'.route($item['route']).'"', false)
+            : $response->assertDontSee('href="'.route($item['route']).'"', false);
     }
 })->with([
-    'Admin' => ['Admin', ['Dashboard', 'Leave requests', 'Leave report', 'Departments', 'Employees', 'Leave types', 'Settings']],
-    'HR' => ['HR', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests', 'Leave report', 'Employees']],
-    'Manager' => ['Manager', ['Dashboard', 'My leaves', 'Leave balance', 'Leave requests']],
-    'Employee' => ['Employee', ['Dashboard', 'My leaves', 'Leave balance']],
+    'Admin' => ['Admin', ['Dashboard', 'Leave calendar', 'Leave requests', 'Leave report', 'Departments', 'Employees', 'Leave types', 'Settings']],
+    'HR' => ['HR', ['Dashboard', 'Leave calendar', 'My leaves', 'Leave balance', 'Leave requests', 'Leave report', 'Employees']],
+    'Manager' => ['Manager', ['Dashboard', 'Leave calendar', 'My leaves', 'Leave balance', 'Leave requests']],
+    'Employee' => ['Employee', ['Dashboard', 'Leave calendar', 'My leaves', 'Leave balance']],
 ]);
 
 test('menu sections show only when the user can see one of their items', function (string $role, array $sections) {
@@ -43,7 +44,7 @@ test('only one menu item is highlighted on pages with a shared route prefix', fu
     $html = actingAs(userWithRole('Employee'))->get(route($route))->getContent();
 
     expect(substr_count($html, 'aria-current="page"'))->toBe(1);
-})->with(['leaves.index', 'leaves.create', 'leaves.balance']);
+})->with(['leaves.index', 'leaves.create', 'leaves.balance', 'leaves.calendar']);
 
 test('every configured menu route and icon exists', function () {
     foreach (config('menu') as $item) {
