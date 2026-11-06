@@ -10,7 +10,8 @@
     <img src="https://img.shields.io/badge/Laravel-12-FF2D20?logo=laravel&logoColor=white" alt="Laravel 12">
     <img src="https://img.shields.io/badge/PHP-8.2%2B-777BB4?logo=php&logoColor=white" alt="PHP 8.2+">
     <img src="https://img.shields.io/badge/MySQL-8-4479A1?logo=mysql&logoColor=white" alt="MySQL">
-    <img src="https://img.shields.io/badge/tests-342%20passing-brightgreen" alt="342 tests">
+    <img src="https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+    <img src="https://img.shields.io/badge/Alpine.js-3-8BC0D0?logo=alpinedotjs&logoColor=white" alt="Alpine.js">
 </p>
 
 A lightweight leave management app: employees apply for leave (full or half days), managers and HR approve it, everyone sees their balance and who is off when. Four fixed roles, a work week you can set per weekday, a queued CSV report and a small REST API for a mobile app.
